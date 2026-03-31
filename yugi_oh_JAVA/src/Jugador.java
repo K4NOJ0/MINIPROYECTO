@@ -59,6 +59,12 @@ public void recuperarVida(int cantidad) {
 
     }
 
+
+public void restarLP(int daño){
+   lp-=daño;
+   System.out.println(nombre+ "pierde "+daño +" lp"); 
+}
+
 public void destruirMonstruo() {
         for (int i = 0; i < mano.size(); i++) {
             Carta c = mano.get(i);
@@ -82,15 +88,36 @@ public void robarCarta() {
     }
 
 
-    /* 
+    
     public void atacar(Monstruo atacante, Monstruo defensor, Jugador enemigo) {
-    if (atacante.getATK() > defensor.getATK()) {
+
+    if (defensor == null) {
+        enemigo.restarLP(atacante.getAtk());
+        System.out.println("Ataque directo!");
+        return;
+    }
+
+    if (atacante.getAtk() > defensor.getAtk()) {
         enemigo.getCampo().getZonaMonstruos().remove(defensor);
-        int daño = atacante.getATK() - defensor.getATK();
+        int daño = atacante.getAtk() - defensor.getAtk();
         enemigo.restarLP(daño);
+        System.out.println("Monstruo destruido");
+    } else if (atacante.getAtk() < defensor.getAtk()) {
+        int daño = defensor.getAtk() - atacante.getAtk();
+        this.restarLP(daño);
+        System.out.println("Tu monstruo es destruido");
+    } else {
+        enemigo.getCampo().getZonaMonstruos().remove(defensor);
+        this.getCampo().getZonaMonstruos().remove(atacante);
+        System.out.println("Ambos monstruos destruidos");
     }
 }
-*/
+
+
+public void defender(){
+
+
+}
 
 
 }

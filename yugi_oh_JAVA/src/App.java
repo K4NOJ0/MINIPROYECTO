@@ -14,10 +14,11 @@ public class App {
         Random turn = new Random();
         Scanner escan=new Scanner(System.in);
         int opc=0;
-        int eleccion=0;
+        
 
         //turno al azar
         Jugador turno;
+        
         if (turn.nextBoolean()) {
           turno = j1;
         } else {
@@ -81,34 +82,22 @@ do{
 
   switch (opc) {
     case 1:{
-        int t=1;
-        while(t>0){//j1.getLp()>0&&j2.getLp()>0 || turno.reemplazar en el while 
+      
+         
+      juego.iniciarJuego(j1, j2, turno);
 
-            
-            juego.iniciarJuego(j1, j2, turno);
-            juego.mostrarInfoJugadores(j1,j2);
-            juego.menuJuego( turno);
-            eleccion=escan.nextInt();
+     while (j1.getLp() > 0 && j2.getLp() > 0) {
 
-               switch (eleccion) {
-                    case 1:
-           
-               
-                         break;
-                    case 2:
+    juego.mostrarInfoJugadores(j1, j2);
 
+    if (turno == j1) {
+        turno = juego.ejecutarTurno(j1, j2, escan);
+    } else {
+        turno = juego.ejecutarTurno(j2, j1, escan);
+    }
 
-                         break;
-                    case 3:
-                    
-                    
-                         break;
-        
-            default:
-                break;
-        }
-        t--;
-        }    
+    if (turno == null) break;
+}
        
     } break;
     case 2:

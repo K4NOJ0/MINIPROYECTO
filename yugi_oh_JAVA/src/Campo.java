@@ -31,5 +31,9 @@ public class Campo {
     public ArrayList<Monstruo> getZonaMonstruos() {
         return zonaMonstruos;
     }
+
+    public ArrayList<Carta> getZonaMagiasTrampas() {
+        return zonaMagiasTrampas;
+    }
  
 }
