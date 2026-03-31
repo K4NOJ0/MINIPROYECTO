@@ -1,6 +1,8 @@
 import java.util.ArrayList;
 import java.util.Random;
+import java.util.Scanner;
 public class Juego {
+private boolean primerTurno = true;
     
 
 public void Menu(){
@@ -25,6 +27,7 @@ public void menuJuego(Jugador turno){
     System.out.println("JUGADOR ["+j1.getNombre()+"]");
     System.out.println("PUNTOS DE LP ["+j1.getLp()+"]");
     j1.mostrarMano();
+    System.out.println("monstruos en el campo: ");
     System.out.println("-------------------------------------------------------------------------------");
     System.out.println("JUGADOR ["+j2.getNombre()+"]");
     System.out.println("PUNTOS DE LP ["+j2.getLp()+"]");
@@ -60,22 +63,105 @@ public Jugador Turnos(Jugador j1, Jugador j2, Jugador turno){
 }
 
 
-public Jugador iniciarJuego(Jugador j1, Jugador j2, Jugador turno){
+public void iniciarJuego(Jugador j1, Jugador j2, Jugador turno){
 
     System.out.println("----------------------------------------------------------");
     System.out.println("LOS DOS DUELISTAS SON :|["+j1.getNombre()+"] Y ["+j2.getNombre()+"]|");
-    System.out.println("EL JUGADOR QUE INICIA LA PARTIDA ES ["+turno.getNombre()+"]");
+    System.out.println("EL JUGADOR QUE INICIA ES ["+turno.getNombre()+"]");
     System.out.println("----------------------------------------------------------");
 
- //primeras 5 cartas para cada uno
-        
- for(int i = 0; i <10; i++){
-        System.out.println("TURNO DEL JUGADOR " + turno.getNombre());
-        turno.robarCarta();
-        turno= Turnos(j1, j2, turno);
+    // 5 cartas para cada uno
+    for(int i = 0; i < 5; i++){
+        j1.robarCarta();
+        j2.robarCarta();
+    }
+}
+public Jugador ejecutarTurno(Jugador actual, Jugador enemigo, Scanner escan) {
+
+    System.out.println("\n=======================");
+    System.out.println("TURNO DE: " + actual.getNombre());
+
+    // 🔹 ROBAR CARTA
+    if (actual.getMazo().isEmpty()) {
+        System.out.println(actual.getNombre() + " pierde por no tener cartas");
+        return null;
+    }
+    actual.robarCarta();
+
+    boolean yaJugoCarta = false;
+    int opcion;
+
+    do {
+        menuJuego(actual);
+        opcion = escan.nextInt();
+
+        switch (opcion) {
+
+            case 1: // ATACAR
+                if (primerTurno) {
+                    System.out.println("❌ No se puede atacar en el primer turno");
+                } else {
+                    if (actual.getCampo().getZonaMonstruos().isEmpty()) {
+                        System.out.println("No tienes monstruos para atacar");
+                    } else {
+                        // ataque 
+                        Monstruo atacante = actual.getCampo().getZonaMonstruos().get(0);
+
+                        if (enemigo.getCampo().getZonaMonstruos().isEmpty()) {
+                            enemigo.restarLP(atacante.getAtk());
+                            System.out.println("Ataque directo!");
+                        } else {
+                            Monstruo defensor = enemigo.getCampo().getZonaMonstruos().get(0);
+                            actual.atacar(atacante, defensor, enemigo);
+                        }
+                    }
+                }
+                break;
+
+            case 2: // USAR CARTA
+                if (yaJugoCarta) {
+                    System.out.println("❌ Ya jugaste una carta este turno");
+                    break;
+                }
+
+                if (actual.getMano().isEmpty()) {
+                    System.out.println("No tienes cartas");
+                    break;
+                }
+
+                Carta carta = actual.getMano().remove(0);
+
+                if (carta instanceof Monstruo) {
+                    boolean invocado = actual.getCampo().invocarMonstruo((Monstruo) carta);
+                    if (invocado) {
+                        System.out.println("Invocaste: " + carta.getNombre());
+                        yaJugoCarta = true;
+                    } else {
+                        System.out.println("Campo lleno");
+                        actual.getMano().add(carta);
+                    }
+
+                } else if (carta instanceof CartaMagica) {
+                    ((CartaMagica) carta).activarEfecto(actual);
+                    yaJugoCarta = true;
+                }
+
+                break;
+
+            case 3:
+                System.out.println("Fin del turno");
+                break;
+
+            default:
+                System.out.println("Opción inválida");
         }
-     return turno;
- 
+
+    } while (opcion != 3);
+
+    primerTurno = false;
+
+    //  CAMBIO DE TURNO
+    return enemigo;
 }
 
 
