@@ -1,81 +1,117 @@
+
+
 import java.util.ArrayList;
 import java.util.Random;
+import java.util.Scanner;
 
 public class App {
+    
     public static void main(String[] args) {
-        Jugador j1 = new Jugador("yugi");
-        Jugador j2 = new Jugador("kaiba");
-
-        ArrayList<Carta> mazo = new ArrayList<>();
-
-       
-        mazo.add(new Monstruo("dragon blanco de ojos azules", 3000, 2500, 8));
-        mazo.add(new Monstruo("mago oscuro", 2500, 2100, 7));
-        mazo.add(new Monstruo("montana de 4 cabezas", 2600, 2200, 8));
-        mazo.add(new Monstruo("salamandra", 1200, 1500, 5));
-        mazo.add(new Monstruo("cabeza de cuernos", 1500, 1200, 4));
-        mazo.add(new Monstruo("toro de guerra", 1700, 1600, 5));
-        mazo.add(new Monstruo("dragon blanco alterno", 2500, 2100, 7));
-        mazo.add(new Monstruo("caballero oscuro", 1900, 1700, 6));
-        mazo.add(new Monstruo("sombra esparcida", 1600, 1800, 4));
-        mazo.add(new Monstruo("guardia supremo", 2700, 2100, 7));
-        mazo.add(new Monstruo("kolossus", 2300, 2000, 6));
-        mazo.add(new Monstruo("fuego fatuo", 1000, 1200, 3));
-        mazo.add(new Monstruo("titania", 2600, 1800, 7));
-        mazo.add(new Monstruo("tortuga fortificada", 1200, 2000, 4));
-        mazo.add(new Monstruo("jinzo", 2400, 1500, 6));
-        mazo.add(new Monstruo("caballero mago", 2500, 2100, 7));
-        mazo.add(new Monstruo("dracoserpiente", 2300, 1800, 6));
-        mazo.add(new Monstruo("gallina del terror", 100, 500, 1));
-        mazo.add(new Monstruo("rana gigante", 800, 900, 2));
-        mazo.add(new Monstruo("mago de la espada", 1800, 1500, 5));
-        mazo.add(new Monstruo("anciano de la sabana", 500, 2000, 4));
-        mazo.add(new Monstruo("lagarto oscuro", 1600, 1200, 4));
-        mazo.add(new Monstruo("caballo de batalla", 1200, 1500, 4));
-        mazo.add(new Monstruo("gobernador del mar", 1000, 2100, 4));
-        mazo.add(new Monstruo("araza", 1600, 1300, 4));
-        mazo.add(new Monstruo("dragon de metal mago", 2100, 1700, 5));
-        mazo.add(new Monstruo("fantasma marino", 1700, 1500, 5));
-        mazo.add(new Monstruo("soldado valiente", 1200, 1000, 4));
-        mazo.add(new Monstruo("garou del desierto", 1800, 1200, 4));
-        mazo.add(new Monstruo("perro guardián", 1900, 1600, 5));
-        mazo.add(new Monstruo("morroid", 2450, 1200, 6));
-
-        // 10 cartas magicas
-        mazo.add(new CartaMagica("huevo del dragon", "robar carta"));
-        mazo.add(new CartaMagica("polvo magico", "robar carta"));
-        mazo.add(new CartaMagica("flecha del destino", "robar carta"));
-        mazo.add(new CartaMagica("escudo mistico", "recuperar lp"));
-        mazo.add(new CartaMagica("curacion triple", "recuperar lp"));
-        mazo.add(new CartaMagica("renacer del espiritu", "recuperar lp"));
-        mazo.add(new CartaMagica("energia de honor", "recuperar lp"));
-        mazo.add(new CartaMagica("lluvia de truenos", "destruir monstruo"));
-        mazo.add(new CartaMagica("trampa de araña", "destruir monstruo"));
-        mazo.add(new CartaMagica("giro del caos", "destruir monstruo"));
-
+      
+        Juego juego=new Juego();
+        Jugador j1 = new Jugador("CUERVO");
+        Jugador j2 = new Jugador("CEBALLOS");
+        Random turn = new Random();
+        Scanner escan=new Scanner(System.in);
+        int opc=0;
         
-        Random rnd = new Random();
-        for (int i = mazo.size() - 1; i > 0; i--) {
-            int j = rnd.nextInt(i + 1);
-            Carta tmp = mazo.get(i);
-            mazo.set(i, mazo.get(j));
-            mazo.set(j, tmp);
-        }
 
-   
-        for (int i = 0; i < mazo.size(); i++) {
-            if (i % 2 == 0) j1.agregarCarta(mazo.get(i));
-            else j2.agregarCarta(mazo.get(i));
-        }
+        //turno al azar
+        Jugador turno;
+        
+        if (turn.nextBoolean()) {
+          turno = j1;
+        } else {
+          turno = j2;
+          }
+    
+        
+        ArrayList<Carta> mazo = new ArrayList<>();
+       //30 monstruos
+        mazo.add(new Monstruo("Dragón Blanco de Ojos Azules", 3000, 2500, 8));
+        mazo.add(new Monstruo("Mago Oscuro", 2500, 2100, 7));
+        mazo.add(new Monstruo("Calavera Invocada", 2500, 1200, 6));
+        mazo.add(new Monstruo("Dragón Negro de Ojos Rojos", 2400, 2000, 7));
+        mazo.add(new Monstruo("Jinzo", 2400, 1500, 6));
+        mazo.add(new Monstruo("Destructor de Espadas", 2600, 2300, 7));
+        mazo.add(new Monstruo("Chica Maga Oscura", 2000, 1700, 6));
+        mazo.add(new Monstruo("La Jinn, Genio Místico de la Lámpara", 1800, 1000, 4));
+        mazo.add(new Monstruo("Buey de Batalla", 1700, 1000, 4));
+        mazo.add(new Monstruo("Neo el Espadachín Mágico", 1700, 1000, 4));
+        mazo.add(new Monstruo("Guardián Celta", 1400, 1200, 4));
+        mazo.add(new Monstruo("Elfa Géminis", 1900, 900, 4));
+        mazo.add(new Monstruo("Soldado Archidemonio", 1900, 1500, 4));
+        mazo.add(new Monstruo("Vorcerader", 1900, 1200, 4));
+        mazo.add(new Monstruo("Gigante Soldado de Piedra", 1300, 2000, 3));
+        mazo.add(new Monstruo("Elfa Mística", 800, 2000, 4));
+        mazo.add(new Monstruo("Aqua Madoor", 1200, 2000, 4));
+        mazo.add(new Monstruo("Muro de Ilusión", 1000, 1850, 4));
+        mazo.add(new Monstruo("Segador del Espíritu", 300, 200, 3));
+        mazo.add(new Monstruo("Kuriboh", 300, 200, 1));
+        mazo.add(new Monstruo("Sangan", 1000, 600, 3));
+        mazo.add(new Monstruo("Bruja del Bosque Negro", 1100, 1200, 4));
+        mazo.add(new Monstruo("Insecto Comehombres", 450, 600, 2));
+        mazo.add(new Monstruo("Dama Arpía", 1300, 1400, 4));
+        mazo.add(new Monstruo("Hermanas Arpía", 1950, 2100, 6));
+        mazo.add(new Monstruo("Gearfried el Caballero de Hierro", 1800, 1600, 4));
+        mazo.add(new Monstruo("Fuerza Exiliada", 1000, 1000, 4));
+        mazo.add(new Monstruo("Hada de Inyección Lily", 400, 1500, 3));
+        mazo.add(new Monstruo("Mago del Tiempo", 500, 400, 2));
+        mazo.add(new Monstruo("Dragón Bebé", 1200, 700, 3));
+       
+        // 10 cartas magicas
+        mazo.add(new CartaMagica("universo atomico", "destruir mostruo")); 
+        mazo.add(new CartaMagica("polvo de cosmos ", "robar carta")); 
+        mazo.add(new CartaMagica("flecha del destino", "robar carta")); 
+        mazo.add(new CartaMagica("escudo mistico", "recuperar lp")); 
+        mazo.add(new CartaMagica("expansion astral ", "recuperar lp")); 
+        mazo.add(new CartaMagica("renacer del espiritu", "recuperar lp"));
+        mazo.add(new CartaMagica("llama celestial", "recuperar lp")); 
+        mazo.add(new CartaMagica("lluvia de relampagos ", "destruir monstruo")); 
+        mazo.add(new CartaMagica("trampa de araña", "destruir monstruo"));
+        mazo.add(new CartaMagica("retumbar del caos ", "destruir monstruo"));
+        
+        
 
-     
-        for (int i = 0; i < 5; i++) {
-            j1.robarCarta();
-            j2.robarCarta();
-        }
 
-        j1.mostrarMano();
-        System.out.println("-----");
-        j2.mostrarMano();
+do{
+ juego.barajar(mazo);
+ juego.repartirCartas(j1, j2, mazo);
+ juego.Menu();
+ opc=escan.nextInt();
+
+  switch (opc) {
+    case 1:{
+      
+         
+      juego.iniciarJuego(j1, j2, turno);
+
+     while (j1.getLp() > 0 && j2.getLp() > 0) {
+
+    juego.mostrarInfoJugadores(j1, j2);
+
+    if (turno == j1) {
+        turno = juego.ejecutarTurno(j1, j2, escan);
+    } else {
+        turno = juego.ejecutarTurno(j2, j1, escan);
+    }
+
+    if (turno == null) break;
+}
+       
+    } break;
+    case 2:
+        System.out.println("SALIENDO.........");
+        break;
+    default:
+      System.out.println("!!ERROR OPCION NO VALIDA!!");
+
+  }
+
+
+}while(opc!=2);
+
+ escan.close(); 
     }
 }
+

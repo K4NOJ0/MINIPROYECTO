@@ -24,6 +24,19 @@ public class Monstruo extends Carta {
 
     @Override
     public void mostrarInfo() {
-        System.out.println("monstruo: " + nombre + " | atk: " + atk + " | def: " + def + " | nivel: " + nivel);
+        System.out.println("MONSTRUO: " + nombre + " | ATK: " + atk + " | DEF: " + def + " | NIVEL: " + nivel+" ESTRELLAS");
+    }
+//nueva funcion de verificacion
+public boolean Tienemostruo (Jugador turno){
+for(Carta carta:turno.getMano()){
+    if(carta instanceof Monstruo ){
+        return true;
     }
 }
+return false;
+}
+
+
+}
+    
+
