@@ -6,31 +6,35 @@ public class CartaMagica extends Carta implements Activar {
         this.efecto = efecto;
     }
 
+    public String getEfecto() { return efecto; }
+
     @Override
     public void activarEfecto(Jugador jugador) {
         switch (efecto) {
-            case "robar carta":
             case "robar":
-                System.out.println("efecto: robar carta");
+                System.out.println("EFECTO: Robas 2 cartas adicionales del mazo.");
+                jugador.robarCarta();
                 jugador.robarCarta();
                 break;
-            case "recuperar lp":
             case "recuperar":
-                System.out.println("efecto: recuperar lp");
-                jugador.recuperarVida(500);
+                System.out.println("EFECTO: Recuperas 1500 LP.");
+                jugador.recuperarVida(1500);
                 break;
-            case "destruir monstruo":
             case "destruir":
-                System.out.println("efecto: destruir monstruo");
-                jugador.destruirMonstruo();
+                System.out.println("EFECTO: Destruyes un monstruo enemigo del campo.");
+                // Se maneja desde Juego.java porque necesita al enemigo
+                break;
+            case "boost":
+                System.out.println("EFECTO: Un monstruo tuyo gana 500 ATK este turno.");
+                // Se maneja desde Juego.java porque necesita al jugador actual
                 break;
             default:
-                System.out.println("efecto desconocido en carta magica");
+                System.out.println("Efecto desconocido.");
         }
     }
 
     @Override
     public void mostrarInfo() {
-        System.out.println("carta magica: " + nombre + " | efecto: " + efecto);
+        System.out.println("CARTA MAGICA: " + nombre + " | EFECTO: " + efecto);
     }
 }

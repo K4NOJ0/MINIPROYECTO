@@ -5,9 +5,6 @@ public abstract class Carta {
         this.nombre = nombre;
     }
 
-    public String getNombre() {
-        return nombre;
-    }
-
+    public String getNombre() { return nombre; }
     public abstract void mostrarInfo();
 }
