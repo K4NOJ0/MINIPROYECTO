@@ -1,33 +1,28 @@
-
-
 import java.util.ArrayList;
 import java.util.Random;
 import java.util.Scanner;
 
 public class App {
-    
     public static void main(String[] args) {
-      
-        Juego juego=new Juego();
-        Jugador j1 = new Jugador("CUERVO");
-        Jugador j2 = new Jugador("CEBALLOS");
-        Random turn = new Random();
-        Scanner escan=new Scanner(System.in);
-        int opc=0;
-        
+        Scanner escan = new Scanner(System.in);
+        Juego juego = new Juego();
+        System.out.println("====== YU-GI-OH! ======");
+        System.out.println("Ingresa el nombre del Duelista 1:");
+        String nombreJ1 = escan.nextLine().toUpperCase();
 
-        //turno al azar
-        Jugador turno;
-        
-        if (turn.nextBoolean()) {
-          turno = j1;
-        } else {
-          turno = j2;
-          }
-    
-        
+        System.out.println("Ingresa el nombre del Duelista 2:");
+        String nombreJ2 = escan.nextLine().toUpperCase();
+
+        Jugador j1 = new Jugador(nombreJ1);
+        Jugador j2 = new Jugador(nombreJ2);
+        Random rnd = new Random();
+        int opc = 0;
+
+        Jugador turno = rnd.nextBoolean() ? j1 : j2;
+
         ArrayList<Carta> mazo = new ArrayList<>();
-       //30 monstruos
+
+        // 30 monstruos
         mazo.add(new Monstruo("Dragón Blanco de Ojos Azules", 3000, 2500, 8));
         mazo.add(new Monstruo("Mago Oscuro", 2500, 2100, 7));
         mazo.add(new Monstruo("Calavera Invocada", 2500, 1200, 6));
@@ -35,7 +30,7 @@ public class App {
         mazo.add(new Monstruo("Jinzo", 2400, 1500, 6));
         mazo.add(new Monstruo("Destructor de Espadas", 2600, 2300, 7));
         mazo.add(new Monstruo("Chica Maga Oscura", 2000, 1700, 6));
-        mazo.add(new Monstruo("La Jinn, Genio Místico de la Lámpara", 1800, 1000, 4));
+        mazo.add(new Monstruo("La Jinn", 1800, 1000, 4));
         mazo.add(new Monstruo("Buey de Batalla", 1700, 1000, 4));
         mazo.add(new Monstruo("Neo el Espadachín Mágico", 1700, 1000, 4));
         mazo.add(new Monstruo("Guardián Celta", 1400, 1200, 4));
@@ -58,60 +53,51 @@ public class App {
         mazo.add(new Monstruo("Hada de Inyección Lily", 400, 1500, 3));
         mazo.add(new Monstruo("Mago del Tiempo", 500, 400, 2));
         mazo.add(new Monstruo("Dragón Bebé", 1200, 700, 3));
-       
-        // 10 cartas magicas
-        mazo.add(new CartaMagica("universo atomico", "destruir mostruo")); 
-        mazo.add(new CartaMagica("polvo de cosmos ", "robar carta")); 
-        mazo.add(new CartaMagica("flecha del destino", "robar carta")); 
-        mazo.add(new CartaMagica("escudo mistico", "recuperar lp")); 
-        mazo.add(new CartaMagica("expansion astral ", "recuperar lp")); 
-        mazo.add(new CartaMagica("renacer del espiritu", "recuperar lp"));
-        mazo.add(new CartaMagica("llama celestial", "recuperar lp")); 
-        mazo.add(new CartaMagica("lluvia de relampagos ", "destruir monstruo")); 
-        mazo.add(new CartaMagica("trampa de araña", "destruir monstruo"));
-        mazo.add(new CartaMagica("retumbar del caos ", "destruir monstruo"));
-        
-        
 
+        // 10 cartas mágicas — strings exactos que usa el switch
+        mazo.add(new CartaMagica("Pot of Greed", "robar"));
+        mazo.add(new CartaMagica("Polvo del Cosmos", "robar"));
+        mazo.add(new CartaMagica("Escudo Místico", "recuperar"));
+        mazo.add(new CartaMagica("Expansión Astral", "recuperar"));
+        mazo.add(new CartaMagica("Renacer del Espíritu", "recuperar"));
+        mazo.add(new CartaMagica("Universo Atómico", "destruir"));
+        mazo.add(new CartaMagica("Lluvia de Relámpagos", "destruir"));
+        mazo.add(new CartaMagica("Trampa de Araña", "destruir"));
+        mazo.add(new CartaMagica("Terraforming", "boost"));
+        mazo.add(new CartaMagica("Poder Oscuro", "boost"));
 
-do{
- juego.barajar(mazo);
- juego.repartirCartas(j1, j2, mazo);
- juego.Menu();
- opc=escan.nextInt();
+        do {
+            juego.barajar(mazo);
+            // Limpiar mazos antes de repartir si se juega de nuevo
+            j1.getMazo().clear();
+            j1.getMano().clear();
+            j2.getMazo().clear();
+            j2.getMano().clear();
 
-  switch (opc) {
-    case 1:{
-      
-         
-      juego.iniciarJuego(j1, j2, turno);
+            juego.repartirCartas(j1, j2, mazo);
+            juego.menu();
+            opc = escan.nextInt();
 
-     while (j1.getLp() > 0 && j2.getLp() > 0) {
+            switch (opc) {
+                case 1:
+                    juego.iniciarJuego(j1, j2, turno);
+                    while (j1.getLp() > 0 && j2.getLp() > 0) {
+                        if (turno == j1) {
+                            turno = juego.ejecutarTurno(j1, j2, escan);
+                        } else {
+                            turno = juego.ejecutarTurno(j2, j1, escan);
+                        }
+                        if (turno == null) break;
+                    }
+                    break;
+                case 2:
+                    System.out.println("Saliendo... ¡Que el corazón de las cartas te guíe!");
+                    break;
+                default:
+                    System.out.println("❌ Opción no válida.");
+            }
+        } while (opc != 2);
 
-    juego.mostrarInfoJugadores(j1, j2);
-
-    if (turno == j1) {
-        turno = juego.ejecutarTurno(j1, j2, escan);
-    } else {
-        turno = juego.ejecutarTurno(j2, j1, escan);
-    }
-
-    if (turno == null) break;
-}
-       
-    } break;
-    case 2:
-        System.out.println("SALIENDO.........");
-        break;
-    default:
-      System.out.println("!!ERROR OPCION NO VALIDA!!");
-
-  }
-
-
-}while(opc!=2);
-
- escan.close(); 
+        escan.close();
     }
 }
-
