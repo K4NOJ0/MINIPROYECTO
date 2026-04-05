@@ -6,20 +6,21 @@ public class App {
     public static void main(String[] args) {
         Scanner escan = new Scanner(System.in);
         Juego juego = new Juego();
-        System.out.println("====== YU-GI-OH! ======");
-        System.out.println("Ingresa el nombre del Duelista 1:");
-        String nombreJ1 = escan.nextLine().toUpperCase();
+        Jugador j1 = new Jugador("KEMPACHI");
+        Jugador j2 = new Jugador("SHINRA");
 
-        System.out.println("Ingresa el nombre del Duelista 2:");
-        String nombreJ2 = escan.nextLine().toUpperCase();
-
-        Jugador j1 = new Jugador(nombreJ1);
-        Jugador j2 = new Jugador(nombreJ2);
         Random rnd = new Random();
+        Jugador turno;
+        
+        if (rnd.nextBoolean()) {
+          turno = j2;
+        } else {
+          turno = j1;
+          }
+        
+
+        
         int opc = 0;
-
-        Jugador turno = rnd.nextBoolean() ? j1 : j2;
-
         ArrayList<Carta> mazo = new ArrayList<>();
 
         // 30 monstruos
@@ -68,7 +69,7 @@ public class App {
 
         do {
             juego.barajar(mazo);
-            // Limpiar mazos antes de repartir si se juega de nuevo
+            
             j1.getMazo().clear();
             j1.getMano().clear();
             j2.getMazo().clear();
@@ -91,10 +92,10 @@ public class App {
                     }
                     break;
                 case 2:
-                    System.out.println("Saliendo... ¡Que el corazón de las cartas te guíe!");
+                    System.out.println("SALIENDO... ");
                     break;
                 default:
-                    System.out.println("❌ Opción no válida.");
+                    System.out.println("OPCION NO VALIDA.");
             }
         } while (opc != 2);
 

@@ -12,16 +12,34 @@ public class Monstruo extends Carta {
         this.modoAtaque = true; // por defecto en ataque
     }
 
-    public int getAtk() { return atk; }
-    public void setAtk(int atk) { this.atk = atk; }
-    public int getDef() { return def; }
-    public int getNivel() { return nivel; }
-    public boolean isModoAtaque() { return modoAtaque; }
-    public void setModoAtaque(boolean modoAtaque) { this.modoAtaque = modoAtaque; }
+    public int getAtk() { 
+        return atk;
+     }
+    public void setAtk(int atk) {
+         this.atk = atk; 
+        }
+    public int getDef() { 
+        return def;
+     }
+    public int getNivel() { 
+        return nivel; 
+    }
+    public boolean isModoAtaque() {
+         return modoAtaque;
+         }
+    public void setModoAtaque(boolean modoAtaque) {
+         this.modoAtaque = modoAtaque; 
+        }
 
     @Override
     public void mostrarInfo() {
-        String modo = modoAtaque ? "ATK" : "DEF";
+       String modo;
+
+        if (modoAtaque) {
+            modo = "ATK";
+        } else {
+            modo = "DEF";
+        }
         System.out.println("MONSTRUO: " + nombre + " | ATK: " + atk + " | DEF: " + def + " | NIVEL: " + nivel + " ESTRELLAS | MODO: " + modo);
     }
 }
