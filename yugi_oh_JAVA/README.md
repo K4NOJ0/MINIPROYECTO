@@ -105,8 +105,8 @@ INICIA: [KEMPACHI]
 ```
 
 ##  Desarrollado por
+Jose Manuel Cuervo  2559905-3743
 
-Jose Manuel Cuervo
-John Freddy Hurtado
-Jhon David Ceballos
+John Freddy Hurtado 2559863-3743
 
+Jhon David Ceballos 2559724-3743
