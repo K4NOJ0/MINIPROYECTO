@@ -17,7 +17,8 @@ public class Juego {
         System.out.println("1. ATACAR");
         System.out.println("2. INVOCAR MONSTRUO");
         System.out.println("3. USAR CARTA MAGICA");
-        System.out.println("4. PASAR TURNO");
+        System.out.println("4. COLOCAR TRAMPA");
+        System.out.println("5. PASAR TURNO");
     }
 
     public void mostrarInfoJugadores(Jugador j1, Jugador j2) {
@@ -44,6 +45,14 @@ public class Juego {
                         modo = "DEF";
                     }
                 System.out.println("  " + i + ". " + m.getNombre() + " | ATK: " + m.getAtk() + " | DEF: " + m.getDef() + " | " + modo);
+            }
+        }
+        if (j.getCampo().getZonaTrampas().isEmpty()) {
+            System.out.println("  TRAMPAS: (VACIO)");
+        } else {
+            System.out.println("  TRAMPAS:");
+            for (int i = 0; i < j.getCampo().getZonaTrampas().size(); i++) {
+                System.out.println("  " + i + ". " + j.getCampo().getZonaTrampas().get(i).getNombre());
             }
         }
     }
@@ -130,7 +139,10 @@ public class Juego {
 
                     // Ataque directo o a monstruo
                     if (enemigo.getCampo().getZonaMonstruos().isEmpty()) {
-                        actual.atacarDirecto(atacante, enemigo);
+                        boolean cancelarAtaque = verificarTrampasAtaque(enemigo, atacante, null, escan);
+                        if (!cancelarAtaque) {
+                            actual.atacarDirecto(atacante, enemigo);
+                        }
                     } else {
                         System.out.println("ELIGE EL MOSTRUO ENEMIGO A ATACAR:");
                         for (int i = 0; i < enemigo.getCampo().getZonaMonstruos().size(); i++) {
@@ -150,7 +162,10 @@ public class Juego {
                             break;
                         }
                         Monstruo defensor = enemigo.getCampo().getZonaMonstruos().get(idxDefensor);
-                        actual.atacar(atacante, defensor, enemigo);
+                        boolean cancelarAtaque = verificarTrampasAtaque(enemigo, atacante, defensor, escan);
+                        if (!cancelarAtaque) {
+                            actual.atacar(atacante, defensor, enemigo);
+                        }
                     }
                     yaAtaco = true;
                     break;
@@ -205,6 +220,7 @@ public class Juego {
                         System.out.println("CAMPO LLENO .");
                         actual.getMano().add(nuevo);
                     }
+                    verificarTrampasInvocacion(enemigo, nuevo, escan);
                     break;
 
                 case 3: // USAR CARTA MAGICA
@@ -234,7 +250,7 @@ public class Juego {
 
                     CartaMagica magia = (CartaMagica) actual.getMano().remove(idxMagica);
 
-                    // Efectos que necesitan al enemigo o selección extra
+                    // Efectos que necesitan al enemigo o seleccion extra
                     if (magia.getEfecto().equals("DESTRUIR")) {
                         ArrayList<Monstruo> zonaEnemiga = enemigo.getCampo().getZonaMonstruos();
                         if (zonaEnemiga.isEmpty()) {
@@ -278,7 +294,43 @@ public class Juego {
                     yaJugoCarta = true;
                     break;
 
-                case 4:
+                case 4: // COLOCAR TRAMPA
+                    if (yaJugoCarta) {
+                        System.out.println("YA JUGASTE UNA CARTA ESTE TURNO.");
+                        break;
+                    }
+
+                    boolean hayTrampa = false;
+                    for (int i = 0; i < actual.getMano().size(); i++) {
+                        if (actual.getMano().get(i) instanceof CartaTrampa) {
+                            System.out.println(i + ". " + actual.getMano().get(i).getNombre());
+                            hayTrampa = true;
+                        }
+                    }
+                    if (!hayTrampa) {
+                        System.out.println("NO TIENES TRAMPAS EN MANO.");
+                        break;
+                    }
+
+                    System.out.println("ELIGE EL NUMERO DE LA TRAMPA:");
+                    int idxTrampa = escan.nextInt();
+                    if (idxTrampa < 0 || idxTrampa >= actual.getMano().size() || !(actual.getMano().get(idxTrampa) instanceof CartaTrampa)) {
+                        System.out.println("SELECCION INVALIDA.");
+                        break;
+                    }
+
+                    CartaTrampa trampa = (CartaTrampa) actual.getMano().remove(idxTrampa);
+
+                    if (actual.getCampo().colocarTrampa(trampa)) {
+                        System.out.println("COLOCASTE: " + trampa.getNombre() + " EN EL CAMPO.");
+                        yaJugoCarta = true;
+                    } else {
+                        System.out.println("ZONA DE TRAMPAS LLENA.");
+                        actual.getMano().add(trampa);
+                    }
+                    break;
+
+                case 5:
                     System.out.println("FIN DEL TURNO DE  " + actual.getNombre() + ".");
                     break;
 
@@ -286,7 +338,7 @@ public class Juego {
                     System.out.println("OPCION INVALIDA");
             }
 
-        } while (opcion != 4);
+        } while (opcion != 5);
 
         primerTurno = false;
 
@@ -301,5 +353,114 @@ public class Juego {
         }
 
         return enemigo;
+    }
+
+    private void verificarTrampasInvocacion(Jugador enemigo, Monstruo invocado, Scanner escan) {
+        ArrayList<CartaTrampa> trampasDisponibles = new ArrayList<>();
+        for (CartaTrampa trampa : enemigo.getCampo().getZonaTrampas()) {
+            if (trampa.getCondicion().equals("invocacion")) {
+                trampasDisponibles.add(trampa);
+            }
+        }
+        if (!trampasDisponibles.isEmpty()) {
+            System.out.println(enemigo.getNombre() + ", ¿QUIERES ACTIVAR UNA TRAMPA POR INVOCACION?");
+            for (int i = 0; i < trampasDisponibles.size(); i++) {
+                System.out.println(i + ". " + trampasDisponibles.get(i).getNombre());
+            }
+            System.out.println(trampasDisponibles.size() + ". NO ACTIVAR");
+            int opcion = escan.nextInt();
+            if (opcion >= 0 && opcion < trampasDisponibles.size()) {
+                CartaTrampa trampaElegida = trampasDisponibles.get(opcion);
+                activarTrampa(trampaElegida, enemigo, null, invocado, null);
+                enemigo.getCampo().getZonaTrampas().remove(trampaElegida);
+            }
+        }
+    }
+
+    private boolean verificarTrampasAtaque(Jugador enemigo, Monstruo atacante, Monstruo defensor, Scanner escan) {
+        ArrayList<CartaTrampa> trampasDisponibles = new ArrayList<>();
+        for (CartaTrampa trampa : enemigo.getCampo().getZonaTrampas()) {
+            if (trampa.getCondicion().equals("ataque")) {
+                trampasDisponibles.add(trampa);
+            }
+        }
+        if (!trampasDisponibles.isEmpty()) {
+            System.out.println(enemigo.getNombre() + ", ¿QUIERES ACTIVAR UNA TRAMPA POR ATAQUE?");
+            for (int i = 0; i < trampasDisponibles.size(); i++) {
+                System.out.println(i + ". " + trampasDisponibles.get(i).getNombre());
+            }
+            System.out.println(trampasDisponibles.size() + ". NO ACTIVAR");
+            int opcion = escan.nextInt();
+            if (opcion >= 0 && opcion < trampasDisponibles.size()) {
+                CartaTrampa trampaElegida = trampasDisponibles.get(opcion);
+                boolean cancelar = activarTrampa(trampaElegida, enemigo, null, atacante, defensor);
+                enemigo.getCampo().getZonaTrampas().remove(trampaElegida);
+                return cancelar;
+            }
+        }
+        return false;
+    }
+
+    private boolean activarTrampa(CartaTrampa trampa, Jugador propietario, Jugador oponente, Monstruo atacante, Monstruo defensor) {
+        trampa.activarEfecto(propietario);
+        switch (trampa.getEfecto()) {
+            case "agujero_trampa":
+                if (atacante != null && atacante.getAtk() > 1000) {
+                    oponente.getCampo().getZonaMonstruos().remove(atacante);
+                    System.out.println(atacante.getNombre() + " DESTRUIDO POR " + trampa.getNombre() + ".");
+                }
+                break;
+            case "fuerza_espejo":
+                if (atacante != null) {
+                    oponente.getCampo().getZonaMonstruos().clear();
+                    System.out.println("TODOS LOS MONSTRUOS ATACANTES DESTRUIDOS POR " + trampa.getNombre() + ".");
+                }
+                break;
+            case "negar_ataque":
+                System.out.println("ATAQUE CANCELADO POR " + trampa.getNombre() + ".");
+                return true;
+            case "cilindro_magico":
+                if (atacante != null) {
+                    oponente.restarLP(atacante.getAtk());
+                    System.out.println(trampa.getNombre() + ": " + oponente.getNombre() + " PIERDE " + atacante.getAtk() + " LP.");
+                }
+                break;
+            case "tributo_torrencial":
+                propietario.getCampo().getZonaMonstruos().clear();
+                oponente.getCampo().getZonaMonstruos().clear();
+                System.out.println(trampa.getNombre() + ": TODOS LOS MONSTRUOS DESTRUIDOS.");
+                break;
+            case "agujero_sin_fondo":
+                if (atacante != null && atacante.getAtk() >= 1500) {
+                    oponente.getCampo().getZonaMonstruos().remove(atacante);
+                    System.out.println(atacante.getNombre() + " DESTRUIDO POR " + trampa.getNombre() + ".");
+                }
+                break;
+            case "evacuacion_forzada":
+                if (!oponente.getCampo().getZonaMonstruos().isEmpty()) {
+                    Monstruo destruido = oponente.getCampo().getZonaMonstruos().remove(0);
+                    System.out.println(destruido.getNombre() + " DEVUELTO AL MAZO POR " + trampa.getNombre() + ".");
+                }
+                break;
+            case "blindaje_sakuretsu":
+                if (atacante != null && atacante.getAtk() <= 1500) {
+                    oponente.getCampo().getZonaMonstruos().remove(atacante);
+                    System.out.println(atacante.getNombre() + " DESTRUIDO POR " + trampa.getNombre() + ".");
+                }
+                break;
+            case "proteccion_waboku":
+                for (Monstruo m : oponente.getCampo().getZonaMonstruos()) {
+                    m.setModoAtaque(false);
+                }
+                System.out.println(trampa.getNombre() + ": TODOS LOS MONSTRUOS CAMBIAN A DEFENSA.");
+                break;
+            case "tornado_polvo":
+                if (!oponente.getCampo().getZonaTrampas().isEmpty()) {
+                    CartaTrampa destruida = oponente.getCampo().getZonaTrampas().remove(0);
+                    System.out.println(destruida.getNombre() + " DESTRUIDA POR " + trampa.getNombre() + ".");
+                }
+                break;
+        }
+        return false;
     }
 }

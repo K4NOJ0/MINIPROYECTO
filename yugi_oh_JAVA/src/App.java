@@ -55,8 +55,8 @@ public class App {
         mazo.add(new Monstruo("Mago del Tiempo", 500, 400, 2));
         mazo.add(new Monstruo("Dragón Bebé", 1200, 700, 3));
 
-        // 10 cartas mágicas — strings exactos que usa el switch
-        mazo.add(new CartaMagica("Pot of Greed", "robar"));
+        // 10 cartas mágicas 
+        mazo.add(new CartaMagica("Olla de la Codicia", "robar"));
         mazo.add(new CartaMagica("Polvo del Cosmos", "robar"));
         mazo.add(new CartaMagica("Escudo Místico", "recuperar"));
         mazo.add(new CartaMagica("Expansión Astral", "recuperar"));
@@ -64,8 +64,20 @@ public class App {
         mazo.add(new CartaMagica("Universo Atómico", "destruir"));
         mazo.add(new CartaMagica("Lluvia de Relámpagos", "destruir"));
         mazo.add(new CartaMagica("Trampa de Araña", "destruir"));
-        mazo.add(new CartaMagica("Terraforming", "boost"));
+        mazo.add(new CartaMagica("Terraformación", "boost"));
         mazo.add(new CartaMagica("Poder Oscuro", "boost"));
+
+        // 10 cartas trampa
+        mazo.add(new CartaTrampa("Agujero Trampa", "agujero_trampa", "invocacion"));
+        mazo.add(new CartaTrampa("Fuerza Espejo", "fuerza_espejo", "ataque"));
+        mazo.add(new CartaTrampa("Negar Ataque", "negar_ataque", "ataque"));
+        mazo.add(new CartaTrampa("Cilindro Mágico", "cilindro_magico", "ataque"));
+        mazo.add(new CartaTrampa("Tributo Torrencial", "tributo_torrencial", "invocacion"));
+        mazo.add(new CartaTrampa("Agujero Trampa Sin Fondo", "agujero_sin_fondo", "invocacion"));
+        mazo.add(new CartaTrampa("Evacuación Forzada", "evacuacion_forzada", "ataque"));
+        mazo.add(new CartaTrampa("Blindaje Sakuretsu", "blindaje_sakuretsu", "ataque"));
+        mazo.add(new CartaTrampa("Protección Waboku", "proteccion_waboku", "ataque"));
+        mazo.add(new CartaTrampa("Tornado de Polvo", "tornado_polvo", "ataque"));
 
         do {
             juego.barajar(mazo);
