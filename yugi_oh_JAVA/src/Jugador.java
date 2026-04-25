@@ -67,6 +67,8 @@ public class Jugador {
         }
     }
 
+    
+
     public void robarCarta() {
         if (mazo.isEmpty()) {
             System.out.println(nombre + " NO PUEDE ROBAR CARTA PIERDE EL DUELO");
@@ -121,4 +123,13 @@ public class Jugador {
         System.out.println("\n ¡ATAQUE DIRECTO DE " + atacante.getNombre() + "!");
         enemigo.restarLP(atacante.getAtk());
     }
-}
+
+    public void sacrificarMonstruo(){
+       
+        Monstruo eliminado= this.getCampo().getZonaMonstruos().remove(0);
+        
+         System.out.println("EL JUGADOR  "+this.getNombre()+" SACRIFICA " +eliminado.getNombre());
+
+   }
+   
+    }
