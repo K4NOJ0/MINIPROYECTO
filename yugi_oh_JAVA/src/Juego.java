@@ -205,23 +205,40 @@ public class Juego {
                     Monstruo nuevo = (Monstruo) actual.getMano().remove(idxMonstruo);
                     nuevo.setModoAtaque(modoEleccion != 2); // si no elige 2, va a ataque
 
-                    if (actual.getCampo().invocarMonstruo(nuevo)) {
-                        String modo;
+                    if (nuevo.getNivel() > 4) {
 
-                        if (nuevo.isModoAtaque()) {
-                            modo = "ATAQUE";
-                        } else {
-                            modo = "DEFENSA";
-                        }
+                    if (actual.getCampo().getZonaMonstruos().isEmpty()) {
 
-                        System.out.println("INVOCASTE: " + nuevo.getNombre() + " EN MODO " + modo);
-                   yaJugoCarta = true;
-                    } else {
-                        System.out.println("CAMPO LLENO .");
+                        System.out.println("NO PUEDES INVOCAR ESTA ESTA CARTA PORQUE NO TIENES MOSTRUOS EN EL CAMPO PARA SACRIFICIOS");
                         actual.getMano().add(nuevo);
+                        break;
                     }
-                    verificarTrampasInvocacion(enemigo, nuevo, escan);
-                    break;
+
+                    actual.sacrificarMonstruo();
+                    }
+
+                    if (actual.getCampo().invocarMonstruo(nuevo)) {
+
+                    String modo;
+
+                    if (nuevo.isModoAtaque()) {
+                        modo = "ATAQUE";
+                    } else {
+                        modo = "DEFENSA";
+                    }
+
+                    System.out.println("INVOCASTE: " + nuevo.getNombre() + " EN MODO " + modo);
+
+                    yaJugoCarta = true;
+
+                   } else {
+
+                    System.out.println("CAMPO LLENO.");
+                    actual.getMano().add(nuevo);
+                }
+
+                verificarTrampasInvocacion(enemigo, nuevo, escan);
+                break;
 
                 case 3: // USAR CARTA MAGICA
                     if (yaJugoCarta) {
