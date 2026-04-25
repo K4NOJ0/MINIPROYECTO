@@ -8,8 +8,12 @@ public class CartaTrampa extends Carta implements Activar {
         this.condicion = condicion;
     }
 
-    public String getEfecto() { return efecto; }
-    public String getCondicion() { return condicion; }
+    public String getEfecto() { 
+        return efecto; 
+    }
+    public String getCondicion() {
+         return condicion; 
+        }
 
     @Override
     public void activarEfecto(Jugador jugador) {
