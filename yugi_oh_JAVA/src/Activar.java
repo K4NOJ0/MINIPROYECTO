@@ -1,3 +1,8 @@
 public interface Activar {
-    void activarEfecto(Jugador jugador);
+
+    default void activarEfecto(Jugador jugador) {}
+
+    void activarEfecto(Jugador jugador, Jugador rival);
+
+    String getEfectoDescripcion();
 }
