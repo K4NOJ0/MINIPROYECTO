@@ -6,12 +6,17 @@ public class Jugador {
     private ArrayList<Carta> mano;
     private int lp = 8000;
     private Campo campo;
+<<<<<<< HEAD
+=======
+    private boolean wabokuActivo;
+>>>>>>> e0f5b056de62eab8203dd8f3e2059a3eb6439333
 
     public Jugador(String nombre) {
         this.nombre = nombre;
         this.mazo = new ArrayList<>();
         this.mano = new ArrayList<>();
         this.campo = new Campo();
+<<<<<<< HEAD
     }
 
     public Campo getCampo() { 
@@ -33,6 +38,21 @@ public class Jugador {
     public void agregarCarta(Carta carta) {
          mazo.add(carta); 
         }
+=======
+        this.wabokuActivo = false;
+    }
+
+    public Campo getCampo() { return campo; }
+    public String getNombre() { return nombre; }
+    public int getLp() { return lp; }
+    public void setLp(int lp) { this.lp = Math.max(0, lp); }
+    public ArrayList<Carta> getMazo() { return mazo; }
+    public ArrayList<Carta> getMano() { return mano; }
+    public boolean isWabokuActivo() { return wabokuActivo; }
+    public void setWabokuActivo(boolean v) { this.wabokuActivo = v; }
+
+    public void agregarCarta(Carta carta) { mazo.add(carta); }
+>>>>>>> e0f5b056de62eab8203dd8f3e2059a3eb6439333
 
     public void mostrarMano() {
         System.out.println("MANO DE " + nombre + ":");
@@ -40,7 +60,10 @@ public class Jugador {
             System.out.print(i + ". ");
             mano.get(i).mostrarInfo();
         }
+<<<<<<< HEAD
 
+=======
+>>>>>>> e0f5b056de62eab8203dd8f3e2059a3eb6439333
     }
 
     public void recuperarVida(int cantidad) {
@@ -48,12 +71,17 @@ public class Jugador {
         System.out.println(nombre + " RECUPERA " + cantidad + " LP. TOTAL: " + lp);
     }
 
+<<<<<<< HEAD
+=======
+    // Nombre original consola
+>>>>>>> e0f5b056de62eab8203dd8f3e2059a3eb6439333
     public void restarLP(int daño) {
         lp -= daño;
         if (lp < 0) lp = 0;
         System.out.println(nombre + " PIERDE " + daño + " LP. LP RESTANTE: " + lp);
     }
 
+<<<<<<< HEAD
     // Destruye un monstruo del campo del ENEMIGO (para cartas mágicas)
     public void destruirMonstruoEnemigo(Jugador enemigo) {
         ArrayList<Monstruo> zona = enemigo.getCampo().getZonaMonstruos();
@@ -73,10 +101,27 @@ public class Jugador {
         if (mazo.isEmpty()) {
             System.out.println(nombre + " NO PUEDE ROBAR CARTA PIERDE EL DUELO");
             return;
+=======
+    // Alias para la GUI (respeta waboku)
+    public void recibirDano(int dano) {
+        if (wabokuActivo) {
+            wabokuActivo = false;
+            System.out.println(nombre + " bloqueó el daño con Waboku.");
+            return;
+        }
+        restarLP(dano);
+    }
+
+    public boolean robarCarta() {
+        if (mazo.isEmpty()) {
+            System.out.println(nombre + " NO PUEDE ROBAR CARTA, PIERDE EL DUELO");
+            return false;
+>>>>>>> e0f5b056de62eab8203dd8f3e2059a3eb6439333
         }
         Carta carta = mazo.remove(0);
         mano.add(carta);
         System.out.println(nombre + " ROBA: " + carta.getNombre());
+<<<<<<< HEAD
     }
 
     // RF3: Combate completo con modo ataque/defensa
@@ -85,6 +130,14 @@ public class Jugador {
 
         if (defensor.isModoAtaque()) {
             // Ataque vs Ataque
+=======
+        return true;
+    }
+
+    public void atacar(Monstruo atacante, Monstruo defensor, Jugador enemigo) {
+        System.out.println("\n" + atacante.getNombre() + " (ATK: " + atacante.getAtk() + ") ATACA A " + defensor.getNombre());
+        if (defensor.isModoAtaque()) {
+>>>>>>> e0f5b056de62eab8203dd8f3e2059a3eb6439333
             if (atacante.getAtk() > defensor.getAtk()) {
                 int daño = atacante.getAtk() - defensor.getAtk();
                 enemigo.getCampo().getZonaMonstruos().remove(defensor);
@@ -98,6 +151,7 @@ public class Jugador {
             } else {
                 enemigo.getCampo().getZonaMonstruos().remove(defensor);
                 this.getCampo().getZonaMonstruos().remove(atacante);
+<<<<<<< HEAD
                 System.out.println("¡AMBOS MOSTRUOS FUERON DESTRUDOS!");
             }
         } else {
@@ -114,10 +168,25 @@ public class Jugador {
             } else {
                 // Empate en modo defensa: nadie recibe daño, nadie se destruye
                 System.out.println("EMPATE NADIE ES DESTRUIDO.");
+=======
+                System.out.println("¡AMBOS MONSTRUOS FUERON DESTRUIDOS!");
+            }
+        } else {
+            if (atacante.getAtk() > defensor.getDef()) {
+                enemigo.getCampo().getZonaMonstruos().remove(defensor);
+                System.out.println(defensor.getNombre() + " FUE DESTRUIDO EN MODO DEFENSA.");
+            } else if (atacante.getAtk() < defensor.getDef()) {
+                int daño = defensor.getDef() - atacante.getAtk();
+                this.restarLP(daño);
+                System.out.println(atacante.getNombre() + " NO PUDO DESTRUIR AL DEFENSOR, RECIBES " + daño + " DE DAÑO.");
+            } else {
+                System.out.println("EMPATE, NADIE ES DESTRUIDO.");
+>>>>>>> e0f5b056de62eab8203dd8f3e2059a3eb6439333
             }
         }
     }
 
+<<<<<<< HEAD
     // Ataque directo al jugador enemigo
     public void atacarDirecto(Monstruo atacante, Jugador enemigo) {
         System.out.println("\n ¡ATAQUE DIRECTO DE " + atacante.getNombre() + "!");
@@ -133,3 +202,34 @@ public class Jugador {
    }
    
     }
+=======
+    public void atacarDirecto(Monstruo atacante, Jugador enemigo) {
+        System.out.println("\n¡ATAQUE DIRECTO DE " + atacante.getNombre() + "!");
+        enemigo.restarLP(atacante.getAtk());
+    }
+
+    public void sacrificarMonstruo() {
+        Monstruo eliminado = this.getCampo().getZonaMonstruos().remove(0);
+        System.out.println("EL JUGADOR " + this.getNombre() + " SACRIFICA " + eliminado.getNombre());
+    }
+
+    public void destruirMonstruoEnemigo(Jugador enemigo) {
+        ArrayList<Monstruo> zona = enemigo.getCampo().getZonaMonstruos();
+        if (zona.isEmpty()) {
+            System.out.println("EL ENEMIGO NO TIENE MONSTRUOS EN EL CAMPO.");
+            return;
+        }
+        System.out.println("ELIGE QUÉ MONSTRUO ENEMIGO DESTRUIR:");
+        for (int i = 0; i < zona.size(); i++) {
+            System.out.println(i + ". " + zona.get(i).getNombre());
+        }
+    }
+
+    // Alias para la GUI
+    public void resetTurno() {
+        for (Monstruo m : campo.getZonaMonstruos()) {
+            m.setYaAtaco(false);
+        }
+    }
+}
+>>>>>>> e0f5b056de62eab8203dd8f3e2059a3eb6439333

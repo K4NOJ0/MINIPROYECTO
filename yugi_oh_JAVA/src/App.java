@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import java.util.ArrayList;
 import java.util.Random;
 import java.util.Scanner;
@@ -114,3 +115,18 @@ public class App {
         escan.close();
     }
 }
+=======
+import javax.swing.SwingUtilities;
+
+public class App {
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> {
+            try {
+                javax.swing.UIManager.setLookAndFeel(
+                    javax.swing.UIManager.getSystemLookAndFeelClassName());
+            } catch (Exception ignored) {}
+            new MenuInicial().setVisible(true);
+        });
+    }
+}
+>>>>>>> e0f5b056de62eab8203dd8f3e2059a3eb6439333
