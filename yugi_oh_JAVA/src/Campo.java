@@ -25,6 +25,7 @@ public class Campo {
         return false;
     }
 
+<<<<<<< HEAD
     public ArrayList<Monstruo> getZonaMonstruos() {
         return zonaMonstruos;
     }
@@ -33,3 +34,13 @@ public class Campo {
         return zonaTrampas;
     }
 }
+=======
+    public ArrayList<Monstruo> getZonaMonstruos() { return zonaMonstruos; }
+    public ArrayList<CartaTrampa> getZonaTrampas() { return zonaTrampas; }
+
+    public void limpiar() {
+        zonaMonstruos.clear();
+        zonaTrampas.clear();
+    }
+}
+>>>>>>> e0f5b056de62eab8203dd8f3e2059a3eb6439333
