@@ -1,5 +1,13 @@
 import javax.swing.*;
 import javax.swing.border.*;
+
+import modelo.Carta;
+import modelo.CartaMagica;
+import modelo.CartaTrampa;
+import modelo.Juego;
+import modelo.Jugador;
+import modelo.Monstruo;
+
 import java.awt.*;
 import java.awt.event.*;
 import java.util.*;

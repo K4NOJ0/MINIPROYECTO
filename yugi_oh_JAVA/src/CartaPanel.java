@@ -1,4 +1,10 @@
 import javax.swing.*;
+
+import modelo.Carta;
+import modelo.CartaMagica;
+import modelo.CartaTrampa;
+import modelo.Monstruo;
+
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.*;
