@@ -1,38 +1,66 @@
 import javax.swing.*;
 import javax.swing.border.*;
-
 import modelo.Carta;
 import modelo.CartaMagica;
 import modelo.CartaTrampa;
-import modelo.Juego;
-import modelo.Jugador;
 import modelo.Monstruo;
-
 import java.awt.*;
 import java.awt.event.*;
-import java.util.*;
+import java.util.ArrayList;
 
+/**
+ * PARTE 2 — VISTA PURA
+ *
+ * TableroJuego es responsable exclusivamente de:
+ *   - Construir y mostrar todos los componentes Swing.
+ *   - Exponer métodos de actualización visual: actualizarHUD(), actualizarMano(),
+ *     actualizarCampo(), mostrarMensaje(), agregarLog().
+ *   - Capturar eventos del usuario (clics, botones) y delegarlos al Controlador
+ *     a través de la interfaz TableroListener.
+ *
+ * NO contiene ninguna regla de juego, validaciones de turno ni lógica de estado.
+ */
 public class TableroJuego extends JFrame {
 
-    // Game state
-    private Jugador j1, j2, turnoActual, rival;
-    private Juego juego;
-    private boolean primerTurno;
-    private boolean yaJugoCartaEsteTurno;
-    private boolean yaRoboEsteTurno;
-    private CartaPanel cartaSeleccionadaMano;
-    private Monstruo monstruoAtacanteSeleccionado;
+    // ════════════════════════════════════════════════════════════════════════
+    //  INTERFAZ PARA EL CONTROLADOR
+    // ════════════════════════════════════════════════════════════════════════
 
-    // UI Components
+    /**
+     * El Controlador (Persona C) implementa esta interfaz para recibir
+     * cada acción del usuario desde la vista.
+     */
+    public interface TableroListener {
+        void onRobarCarta();
+        void onJugarCarta(Carta carta);
+        void onAtacarConMonstruo(Monstruo atacante);
+        void onSeleccionarObjetivo(Monstruo objetivo);
+        void onAtacarDirecto();
+        void onTerminarTurno();
+        void onActivarTrampa(CartaTrampa trampa);
+    }
+
+    // ════════════════════════════════════════════════════════════════════════
+    //  ESTADO SOLO DE PRESENTACIÓN
+    // ════════════════════════════════════════════════════════════════════════
+
+    private TableroListener listener;
+
+    /** Carta de la mano actualmente seleccionada (solo UI). */
+    private CartaPanel cartaSeleccionadaMano;
+
+    /** Si está esperando que el jugador elija un objetivo de ataque. */
+    private boolean esperandoObjetivo = false;
+
+    // ── Componentes ─────────────────────────────────────────────────────────
     private JPanel panelCampoRival, panelCampoJugador;
     private JPanel panelTrampasRival, panelTrampasJugador;
     private JPanel panelManoJugador, panelManoRival;
     private JLabel lblLpJ1, lblLpJ2, lblTurno, lblMazoJ1, lblMazoJ2;
     private JTextArea logArea;
     private JButton btnTerminarTurno, btnAtacarDirecto;
-    private JPanel panelBotones;
 
-    // Colors
+    // ── Paleta ───────────────────────────────────────────────────────────────
     private static final Color BG_DARK    = new Color(8, 18, 8);
     private static final Color BG_CAMPO   = new Color(15, 45, 15);
     private static final Color BG_RIVAL   = new Color(40, 10, 10);
@@ -41,21 +69,22 @@ public class TableroJuego extends JFrame {
     private static final Color RED_HP     = new Color(220, 60, 60);
     private static final Color BLUE_HP    = new Color(80, 160, 255);
 
-    public TableroJuego(String nombre1, String nombre2) {
-        juego = new Juego();
-        j1 = new Jugador(nombre1);
-        j2 = new Jugador(nombre2);
+    // ── Nombres guardados para etiquetas (no hay referencia a Jugador) ───────
+    private final String nombreJ1;
+    private final String nombreJ2;
 
-        // Build deck and deal
-        ArrayList<Carta> mazo = construirMazo();
-        juego.repartirCartas(j1, j2, mazo);
+    // ════════════════════════════════════════════════════════════════════════
+    //  CONSTRUCTORES
+    // ════════════════════════════════════════════════════════════════════════
 
-        // Random first turn
-        turnoActual = new Random().nextBoolean() ? j1 : j2;
-        rival = (turnoActual == j1) ? j2 : j1;
-        primerTurno = true;
-        yaJugoCartaEsteTurno = false;
-        yaRoboEsteTurno = false;
+    /**
+     * Constructor MVC: recibe los nombres y el listener del controlador.
+     * No crea ni toca objetos de modelo.
+     */
+    public TableroJuego(String nombre1, String nombre2, TableroListener listener) {
+        this.nombreJ1 = nombre1;
+        this.nombreJ2 = nombre2;
+        this.listener = listener;
 
         setTitle("Yu-Gi-Oh! — Duelo");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -65,106 +94,58 @@ public class TableroJuego extends JFrame {
         setMinimumSize(new Dimension(1000, 700));
 
         initUI();
-        actualizarTablero();
-        agregarLog("🎴 ¡El duelo comienza! Primer turno: " + turnoActual.getNombre());
-        agregarLog("📜 Turno de " + turnoActual.getNombre() + ". Haz clic en 'Robar Carta' para comenzar.");
     }
+
+    /**
+     * Constructor de compatibilidad (sin controlador).
+     * Permite que el código anterior siga compilando mientras Persona C
+     * implementa el controlador.
+     */
+    public TableroJuego(String nombre1, String nombre2) {
+        this(nombre1, nombre2, null);
+    }
+
+    // ── Permite inyectar/cambiar el listener en cualquier momento ────────────
+    public void setTableroListener(TableroListener listener) {
+        this.listener = listener;
+    }
+
+    // ════════════════════════════════════════════════════════════════════════
+    //  CONSTRUCCIÓN DE LA UI  (solo layout y componentes)
+    // ════════════════════════════════════════════════════════════════════════
 
     private void initUI() {
         JPanel root = new JPanel(new BorderLayout(5, 5)) {
             @Override protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
-                Graphics2D g2 = (Graphics2D) g;
-                g2.setColor(BG_DARK);
-                g2.fillRect(0, 0, getWidth(), getHeight());
+                g.setColor(BG_DARK);
+                g.fillRect(0, 0, getWidth(), getHeight());
             }
         };
         root.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
 
-        // ---- TOP HUD ----
-        JPanel hud = createHUD();
-        root.add(hud, BorderLayout.NORTH);
-
-        // ---- CENTER: CAMPO ----
-        JPanel centro = new JPanel(new GridLayout(5, 1, 3, 3));
-        centro.setOpaque(false);
-
-        panelManoRival = createZonePanel("🂠 Mano del Rival", BG_RIVAL, false);
-        panelTrampasRival = createZonePanel("⬇ Zona Trampa Rival", new Color(30, 10, 10), false);
-        panelCampoRival = createZonePanel("⚔ Campo Rival", BG_CAMPO, false);
-        panelCampoJugador = createZonePanel("🛡 Tu Campo", BG_CAMPO, true);
-        panelTrampasJugador = createZonePanel("⬇ Tu Zona Trampa", new Color(10, 30, 10), true);
-
-        // Divider line
-        JSeparator sep = new JSeparator();
-        sep.setForeground(GREEN_LINE);
-        sep.setBackground(GREEN_LINE);
-
-        centro.add(panelManoRival);
-        centro.add(panelTrampasRival);
-        centro.add(panelCampoRival);
-        centro.add(panelCampoJugador);
-        centro.add(panelTrampasJugador);
-
-        root.add(centro, BorderLayout.CENTER);
-
-        // ---- BOTTOM: MANO JUGADOR + LOG + BOTONES ----
-        JPanel bottom = new JPanel(new BorderLayout(5, 0));
-        bottom.setOpaque(false);
-        bottom.setPreferredSize(new Dimension(0, 200));
-
-        panelManoJugador = createZonePanel("🃏 Tu Mano", new Color(10, 30, 10), true);
-        panelManoJugador.setPreferredSize(new Dimension(600, 180));
-        bottom.add(panelManoJugador, BorderLayout.CENTER);
-
-        // Log + buttons
-        JPanel rightPanel = new JPanel(new BorderLayout(0, 5));
-        rightPanel.setOpaque(false);
-        rightPanel.setPreferredSize(new Dimension(350, 200));
-
-        logArea = new JTextArea(8, 30);
-        logArea.setEditable(false);
-        logArea.setBackground(new Color(5, 10, 5));
-        logArea.setForeground(new Color(180, 255, 180));
-        logArea.setFont(new Font("Monospaced", Font.PLAIN, 11));
-        logArea.setLineWrap(true);
-        logArea.setWrapStyleWord(true);
-        logArea.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(new Color(50, 120, 50)),
-            BorderFactory.createEmptyBorder(5, 5, 5, 5)
-        ));
-        JScrollPane scroll = new JScrollPane(logArea);
-        scroll.setPreferredSize(new Dimension(340, 130));
-        scroll.setBorder(null);
-        rightPanel.add(scroll, BorderLayout.CENTER);
-
-        panelBotones = createBotonPanel();
-        rightPanel.add(panelBotones, BorderLayout.SOUTH);
-
-        bottom.add(rightPanel, BorderLayout.EAST);
-        root.add(bottom, BorderLayout.SOUTH);
+        root.add(createHUD(),    BorderLayout.NORTH);
+        root.add(createCampo(),  BorderLayout.CENTER);
+        root.add(createBottom(), BorderLayout.SOUTH);
 
         setContentPane(root);
     }
 
+    // ── HUD ─────────────────────────────────────────────────────────────────
     private JPanel createHUD() {
         JPanel hud = new JPanel(new GridLayout(1, 5, 10, 0));
         hud.setOpaque(false);
         hud.setPreferredSize(new Dimension(0, 60));
         hud.setBorder(BorderFactory.createMatteBorder(0, 0, 2, 0, GOLD));
 
-        lblLpJ1 = createHUDLabel("❤ " + j1.getNombre() + ": 8000 LP", RED_HP);
+        lblLpJ1   = createHUDLabel("❤ " + nombreJ1 + ": 8000 LP", RED_HP);
         lblMazoJ1 = createHUDLabel("🂠 Mazo: 20", Color.LIGHT_GRAY);
-        lblTurno = createHUDLabel("TURNO", GOLD);
+        lblTurno  = createHUDLabel("TURNO", GOLD);
         lblMazoJ2 = createHUDLabel("🂠 Mazo: 20", Color.LIGHT_GRAY);
-        lblLpJ2 = createHUDLabel("❤ " + j2.getNombre() + ": 8000 LP", BLUE_HP);
+        lblLpJ2   = createHUDLabel("❤ " + nombreJ2 + ": 8000 LP", BLUE_HP);
 
-        hud.add(lblLpJ1);
-        hud.add(lblMazoJ1);
-        hud.add(lblTurno);
-        hud.add(lblMazoJ2);
-        hud.add(lblLpJ2);
-
+        hud.add(lblLpJ1); hud.add(lblMazoJ1); hud.add(lblTurno);
+        hud.add(lblMazoJ2); hud.add(lblLpJ2);
         return hud;
     }
 
@@ -175,11 +156,32 @@ public class TableroJuego extends JFrame {
         return lbl;
     }
 
-    private JPanel createZonePanel(String title, Color bg, boolean esJugador) {
+    // ── Zonas de campo ───────────────────────────────────────────────────────
+    private JPanel createCampo() {
+        JPanel centro = new JPanel(new GridLayout(5, 1, 3, 3));
+        centro.setOpaque(false);
+
+        panelManoRival     = createZonePanel("🂠 Mano del Rival",       BG_RIVAL);
+        panelTrampasRival  = createZonePanel("⬇ Zona Trampa Rival",    new Color(30, 10, 10));
+        panelCampoRival    = createZonePanel("⚔ Campo Rival",           BG_CAMPO);
+        panelCampoJugador  = createZonePanel("🛡 Tu Campo",              BG_CAMPO);
+        panelTrampasJugador= createZonePanel("⬇ Tu Zona Trampa",        new Color(10, 30, 10));
+
+        centro.add(panelManoRival);
+        centro.add(panelTrampasRival);
+        centro.add(panelCampoRival);
+        centro.add(panelCampoJugador);
+        centro.add(panelTrampasJugador);
+        return centro;
+    }
+
+    private JPanel createZonePanel(String title, Color bg) {
         JPanel wrapper = new JPanel(new BorderLayout(2, 2)) {
             @Override protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
                 g.setColor(bg);
+                ((Graphics2D) g).setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                    RenderingHints.VALUE_ANTIALIAS_ON);
                 g.fillRoundRect(0, 0, getWidth(), getHeight(), 8, 8);
             }
         };
@@ -198,31 +200,72 @@ public class TableroJuego extends JFrame {
         cartas.setOpaque(false);
         cartas.setName("cartas");
         wrapper.add(cartas, BorderLayout.CENTER);
-
         return wrapper;
     }
 
-    private JPanel createBotonPanel() {
+    // ── Panel inferior: mano + log + botones ─────────────────────────────────
+    private JPanel createBottom() {
+        JPanel bottom = new JPanel(new BorderLayout(5, 0));
+        bottom.setOpaque(false);
+        bottom.setPreferredSize(new Dimension(0, 200));
+
+        panelManoJugador = createZonePanel("🃏 Tu Mano", new Color(10, 30, 10));
+        panelManoJugador.setPreferredSize(new Dimension(600, 180));
+        bottom.add(panelManoJugador, BorderLayout.CENTER);
+
+        // Panel derecho: log + botones
+        JPanel rightPanel = new JPanel(new BorderLayout(0, 5));
+        rightPanel.setOpaque(false);
+        rightPanel.setPreferredSize(new Dimension(350, 200));
+
+        logArea = new JTextArea(8, 30);
+        logArea.setEditable(false);
+        logArea.setBackground(new Color(5, 10, 5));
+        logArea.setForeground(new Color(180, 255, 180));
+        logArea.setFont(new Font("Monospaced", Font.PLAIN, 11));
+        logArea.setLineWrap(true);
+        logArea.setWrapStyleWord(true);
+        logArea.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(50, 120, 50)),
+            BorderFactory.createEmptyBorder(5, 5, 5, 5)
+        ));
+
+        JScrollPane scroll = new JScrollPane(logArea);
+        scroll.setPreferredSize(new Dimension(340, 130));
+        scroll.setBorder(null);
+        rightPanel.add(scroll, BorderLayout.CENTER);
+        rightPanel.add(createBotones(), BorderLayout.SOUTH);
+
+        bottom.add(rightPanel, BorderLayout.EAST);
+        return bottom;
+    }
+
+    private JPanel createBotones() {
         JPanel p = new JPanel(new GridLayout(2, 2, 5, 5));
         p.setOpaque(false);
 
-        JButton btnRobar = createBtn("🃏 Robar Carta", new Color(50, 100, 200));
-        btnRobar.addActionListener(e -> robarCarta());
+        JButton btnRobar = createBtn("🃏 Robar Carta",       new Color(50, 100, 200));
+        JButton btnJugar = createBtn("▶ Jugar Carta",        new Color(60, 150, 60));
+        btnAtacarDirecto = createBtn("⚡ Ataque Directo",    new Color(180, 80, 0));
+        btnTerminarTurno = createBtn("⏭ Terminar Turno",    new Color(120, 50, 120));
 
-        JButton btnJugar = createBtn("▶ Jugar Carta", new Color(60, 150, 60));
-        btnJugar.addActionListener(e -> jugarCartaSeleccionada());
+        // ── Los botones solo notifican al listener ──────────────────────────
+        btnRobar.addActionListener(e -> { if (listener != null) listener.onRobarCarta(); });
 
-        btnAtacarDirecto = createBtn("⚡ Ataque Directo", new Color(180, 80, 0));
-        btnAtacarDirecto.addActionListener(e -> atacarDirecto());
+        btnJugar.addActionListener(e -> {
+            if (listener == null) return;
+            if (cartaSeleccionadaMano == null) {
+                agregarLog("⚠ Selecciona una carta de tu mano primero.");
+                return;
+            }
+            listener.onJugarCarta(cartaSeleccionadaMano.getCarta());
+        });
 
-        btnTerminarTurno = createBtn("⏭ Terminar Turno", new Color(120, 50, 120));
-        btnTerminarTurno.addActionListener(e -> terminarTurno());
+        btnAtacarDirecto.addActionListener(e -> { if (listener != null) listener.onAtacarDirecto(); });
+        btnTerminarTurno.addActionListener(e -> { if (listener != null) listener.onTerminarTurno(); });
 
-        p.add(btnRobar);
-        p.add(btnJugar);
-        p.add(btnAtacarDirecto);
-        p.add(btnTerminarTurno);
-
+        p.add(btnRobar); p.add(btnJugar);
+        p.add(btnAtacarDirecto); p.add(btnTerminarTurno);
         return p;
     }
 
@@ -231,14 +274,15 @@ public class TableroJuego extends JFrame {
             @Override protected void paintComponent(Graphics g) {
                 Graphics2D g2 = (Graphics2D) g;
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                Color c = getModel().isPressed() ? color.darker() :
-                          getModel().isRollover() ? color.brighter() : color;
+                Color c = getModel().isPressed() ? color.darker()
+                        : getModel().isRollover() ? color.brighter() : color;
                 g2.setColor(c);
                 g2.fillRoundRect(0, 0, getWidth(), getHeight(), 8, 8);
                 g2.setColor(Color.WHITE);
                 g2.setFont(getFont());
                 FontMetrics fm = g2.getFontMetrics();
-                g2.drawString(getText(), (getWidth() - fm.stringWidth(getText())) / 2,
+                g2.drawString(getText(),
+                    (getWidth() - fm.stringWidth(getText())) / 2,
                     (getHeight() + fm.getAscent() - fm.getDescent()) / 2);
             }
         };
@@ -251,257 +295,178 @@ public class TableroJuego extends JFrame {
         return btn;
     }
 
-    // ===================== ACCIONES DE LA TERMINAL =====================
+    // ════════════════════════════════════════════════════════════════════════
+    //  MÉTODOS PÚBLICOS DE ACTUALIZACIÓN VISUAL
+    //  (el Controlador los llama; la vista solo refresca la pantalla)
+    // ════════════════════════════════════════════════════════════════════════
 
-    private void robarCarta() {
-        if (!esMiTurno()) return;
-        if (yaRoboEsteTurno) { agregarLog("⚠ Ya robaste una carta este turno."); return; }
-
-        if (turnoActual.getMazo().isEmpty()) {
-            finalizarJuego(rival, "¡Se quedó sin cartas en el mazo!");
-            return;
-        }
-        turnoActual.robarCarta();
-        yaRoboEsteTurno = true;
-        agregarLog(" " + turnoActual.getNombre() + " robó una carta. Mano: " + turnoActual.getMano().size());
-        actualizarTablero();
+    /**
+     * Actualiza el HUD (LP, tamaño de mazos, nombre del turno).
+     *
+     * @param lpJ1       Puntos de vida del jugador 1
+     * @param lpJ2       Puntos de vida del jugador 2
+     * @param mazoJ1     Cartas restantes en el mazo J1
+     * @param mazoJ2     Cartas restantes en el mazo J2
+     * @param turnoNombre Nombre del jugador cuyo turno es
+     */
+    public void actualizarHUD(int lpJ1, int lpJ2, int mazoJ1, int mazoJ2, String turnoNombre) {
+        lblLpJ1.setText("❤ " + nombreJ1 + ": " + lpJ1 + " LP");
+        lblLpJ2.setText("❤ " + nombreJ2 + ": " + lpJ2 + " LP");
+        lblMazoJ1.setText("🂠 Mazo " + nombreJ1 + ": " + mazoJ1);
+        lblMazoJ2.setText("🂠 Mazo " + nombreJ2 + ": " + mazoJ2);
+        lblTurno.setText("TURNO: " + turnoNombre.toUpperCase());
     }
 
-    private void jugarCartaSeleccionada() {
-        if (!esMiTurno()) return;
-        if (!yaRoboEsteTurno) { agregarLog(" Debes robar una carta primero."); return; }
-        if (yaJugoCartaEsteTurno) { agregarLog(" Ya jugaste una carta este turno."); return; }
-        if (cartaSeleccionadaMano == null) { agregarLog(" Selecciona una carta de tu mano primero."); return; }
-
-        Carta carta = cartaSeleccionadaMano.getCarta();
-
-        if (carta instanceof Monstruo) {
-            Monstruo m = (Monstruo) carta;
-            if (m.getNivel() > 4) {
-                if (turnoActual.getCampo().getZonaMonstruos().isEmpty()) {
-                    agregarLog(" Necesitas sacrificar un monstruo para invocar a " + m.getNombre() + " (nivel " + m.getNivel() + ").");
-                    mostrarDialogoSacrificio(m);
-                    return;
-                }
-            }
-            invocarMonstruo(m);
-        } else if (carta instanceof CartaMagica) {
-            CartaMagica cm = (CartaMagica) carta;
-            turnoActual.getMano().remove(carta);
-            cm.activarEfecto(turnoActual, rival);
-            agregarLog(" " + turnoActual.getNombre() + " activó " + cm.getNombre() + ": " + cm.getEfectoDescripcion());
-            yaJugoCartaEsteTurno = true;
-            cartaSeleccionadaMano = null;
-        } else if (carta instanceof CartaTrampa) {
-            CartaTrampa ct = (CartaTrampa) carta;
-            if (turnoActual.getCampo().colocarTrampa(ct)) {
-                turnoActual.getMano().remove(carta);
-                ct.setActiva(true);
-                agregarLog(" " + turnoActual.getNombre() + " colocó la trampa " + ct.getNombre() + " boca abajo.");
-                yaJugoCartaEsteTurno = true;
-                cartaSeleccionadaMano = null;
-            } else {
-                agregarLog(" Zona de trampas llena.");
-            }
-        }
-
-        actualizarTablero();
-        verificarFinJuego();
-    }
-
-    private void mostrarDialogoSacrificio(Monstruo objetivo) {
-        ArrayList<Monstruo> enCampo = turnoActual.getCampo().getZonaMonstruos();
-        if (enCampo.isEmpty()) {
-            agregarLog(" No tienes monstruos para sacrificar.");
-            return;
-        }
-
-        String[] opciones = new String[enCampo.size()];
-        for (int i = 0; i < enCampo.size(); i++) {
-            Monstruo m = enCampo.get(i);
-            opciones[i] = m.getNombre() + " (ATK:" + m.getAtk() + ")";
-        }
-
-        int sel = JOptionPane.showOptionDialog(this,
-            "Elige un monstruo para sacrificar e invocar a " + objetivo.getNombre() + " (Nivel " + objetivo.getNivel() + ")",
-            "Sacrificio Requerido", JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE,
-            null, opciones, opciones[0]);
-
-        if (sel >= 0) {
-            Monstruo sacrificado = enCampo.remove(sel);
-            agregarLog(" " + turnoActual.getNombre() + " sacrificó a " + sacrificado.getNombre() + ".");
-            invocarMonstruo(objetivo);
-        }
-    }
-
-    private void invocarMonstruo(Monstruo m) {
-        // Ask for mode
-        int modo = JOptionPane.showOptionDialog(this,
-            "¿En qué posición invocar a " + m.getNombre() + "?",
-            "Modo de Invocación", JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE,
-            null, new String[]{"Modo Ataque", "Modo Defensa"}, "Modo Ataque");
-
-        m.setEnModoAtaque(modo == 0 || modo == JOptionPane.CLOSED_OPTION);
-
-        if (turnoActual.getCampo().invocarMonstruo(m)) {
-            turnoActual.getMano().remove(m);
-            agregarLog("⚔ " + turnoActual.getNombre() + " invocó a " + m.getNombre() +
-                " (" + (m.isEnModoAtaque() ? "Ataque" : "Defensa") + ")");
-            yaJugoCartaEsteTurno = true;
-            cartaSeleccionadaMano = null;
-        } else {
-            agregarLog(" Campo lleno. No puedes invocar más monstruos.");
-        }
-    }
-
-    private void atacarConMonstruo(Monstruo atacante) {
-        if (!esMiTurno()) return;
-        if (!yaRoboEsteTurno) { agregarLog(" Debes robar primero."); return; }
-        if (primerTurno && turnoActual == (rival == j2 ? j1 : j2)) {
-            agregarLog(" No puedes atacar en el primer turno.");
-            return;
-        }
-        if (atacante.isYaAtaco()) { agregarLog(" " + atacante.getNombre() + " ya atacó este turno."); return; }
-        if (!atacante.isEnModoAtaque()) { agregarLog(" Solo los monstruos en modo Ataque pueden atacar."); return; }
-
-        if (rival.getCampo().getZonaMonstruos().isEmpty()) {
-            String result = juego.atacarDirecto(atacante, rival);
-            agregarLog(result);
-        } else {
-
-            monstruoAtacanteSeleccionado = atacante;
-            agregarLog(" " + atacante.getNombre() + " listo para atacar. Selecciona el monstruo objetivo en el campo rival.");
-            resaltarCampoRival(true);
-            return;
-        }
-
-        actualizarTablero();
-        verificarFinJuego();
-    }
-
-    private void atacarDirecto() {
-        if (!esMiTurno()) return;
-        if (!rival.getCampo().getZonaMonstruos().isEmpty()) {
-            agregarLog("⚠ El rival tiene monstruos. No puedes atacar directamente.");
-            return;
-        }
-        if (turnoActual.getCampo().getZonaMonstruos().isEmpty()) {
-            agregarLog("⚠ No tienes monstruos para atacar.");
-            return;
-        }
-
-        for (Monstruo m : turnoActual.getCampo().getZonaMonstruos()) {
-            if (!m.isYaAtaco() && m.isEnModoAtaque()) {
-                atacarConMonstruo(m);
-                return;
-            }
-        }
-        agregarLog(" Ningún monstruo puede atacar directamente.");
-    }
-
-    private void terminarTurno() {
-        if (!esMiTurno()) return;
-
-
-        turnoActual.resetTurno();
-
-
-        for (CartaTrampa t : turnoActual.getCampo().getZonaTrampas()) {
-            if (t.getIdEfecto().equals("proteccion_waboku") && t.isActiva()) {
-                turnoActual.setWabokuActivo(true);
-                turnoActual.getCampo().getZonaTrampas().remove(t);
-                agregarLog(" Waboku activado para proteger a " + turnoActual.getNombre() + " este turno.");
-                break;
-            }
-        }
-
-        // Swap turns
-        Jugador temp = turnoActual;
-        turnoActual = rival;
-        rival = temp;
-
-        primerTurno = false;
-        yaJugoCartaEsteTurno = false;
-        yaRoboEsteTurno = false;
-        cartaSeleccionadaMano = null;
-        monstruoAtacanteSeleccionado = null;
-
-        agregarLog("---");
-        agregarLog(" Turno de " + turnoActual.getNombre() + ". Haz clic en 'Robar Carta' para comenzar.");
-        actualizarTablero();
-    }
-
-
-
-    private void actualizarTablero() {
-
-        lblLpJ1.setText(" " + j1.getNombre() + ": " + j1.getLp() + " LP");
-        lblLpJ2.setText(" " + j2.getNombre() + ": " + j2.getLp() + " LP");
-        lblMazoJ1.setText(" Mazo " + j1.getNombre() + ": " + j1.getMazo().size());
-        lblMazoJ2.setText(" Mazo " + j2.getNombre() + ": " + j2.getMazo().size());
-        lblTurno.setText("TURNO: " + turnoActual.getNombre().toUpperCase());
-
-  
-        Jugador jugador = turnoActual;
-        Jugador rivalUI = rival;
-
-        // Campo jugador
-        actualizarZonaMonstruos(panelCampoJugador, jugador.getCampo().getZonaMonstruos(), true);
-        actualizarZonaTrampas(panelTrampasJugador, jugador.getCampo().getZonaTrampas(), true);
-        actualizarMano(panelManoJugador, jugador.getMano(), true);
-
-        // Campo rival
-        actualizarZonaMonstruos(panelCampoRival, rivalUI.getCampo().getZonaMonstruos(), false);
-        actualizarZonaTrampas(panelTrampasRival, rivalUI.getCampo().getZonaTrampas(), false);
-        actualizarManoRival(panelManoRival, rivalUI.getMano().size());
-
-        revalidate();
-        repaint();
-    }
-
-    private JPanel getCartasPanel(JPanel zone) {
-        for (Component c : zone.getComponents()) {
-            if (c instanceof JPanel && "cartas".equals(((JPanel)c).getName())) return (JPanel) c;
-        }
-        return zone;
-    }
-
-    private void actualizarZonaMonstruos(JPanel zone, ArrayList<Monstruo> monstruos, boolean esJugador) {
-        JPanel cartas = getCartasPanel(zone);
+    /**
+     * Actualiza la mano del jugador activo.
+     * Cada carta genera un CartaPanel clicable que notifica al listener.
+     *
+     * @param mano Lista de cartas en la mano del jugador activo
+     */
+    public void actualizarMano(ArrayList<Carta> mano) {
+        JPanel cartas = getCartasPanel(panelManoJugador);
         cartas.removeAll();
-        for (Monstruo m : monstruos) {
-            CartaPanel cp = new CartaPanel(m, true);
-            if (esJugador) {
-                cp.addMouseListener(new MouseAdapter() {
-                    @Override public void mouseClicked(MouseEvent e) {
-                        if (monstruoAtacanteSeleccionado == null) {
-                            atacarConMonstruo(m);
-                        }
+        for (Carta carta : mano) {
+            CartaPanel cp = new CartaPanel(carta);
+            cp.addMouseListener(new MouseAdapter() {
+                @Override public void mouseClicked(MouseEvent e) {
+                    // Deseleccionar anterior
+                    if (cartaSeleccionadaMano != null) cartaSeleccionadaMano.setSeleccionada(false);
+                    if (cartaSeleccionadaMano == cp) {
+                        cartaSeleccionadaMano = null;
+                    } else {
+                        cartaSeleccionadaMano = cp;
+                        cp.setSeleccionada(true);
+                        agregarLog("🃏 Seleccionada: " + carta.getNombre() + " — " + carta.getDescripcion());
                     }
-                });
-            } else {
-
-                cp.addMouseListener(new MouseAdapter() {
-                    @Override public void mouseClicked(MouseEvent e) {
-                        if (monstruoAtacanteSeleccionado != null) {
-                            String result = juego.atacarMonstruo(monstruoAtacanteSeleccionado, m,
-                                turnoActual, rival);
-                            agregarLog(result);
-                            monstruoAtacanteSeleccionado = null;
-                            resaltarCampoRival(false);
-                            actualizarTablero();
-                            verificarFinJuego();
-                        }
-                    }
-                });
-            }
+                }
+            });
             cartas.add(cp);
         }
         cartas.revalidate();
         cartas.repaint();
     }
 
-    private void actualizarZonaTrampas(JPanel zone, ArrayList<CartaTrampa> trampas, boolean esJugador) {
+    /**
+     * Actualiza el campo completo: monstruos, trampas de ambos jugadores
+     * y la mano oculta del rival.
+     *
+     * @param monstruosJugador  Monstruos del jugador activo
+     * @param trampasJugador    Trampas del jugador activo
+     * @param monstruosRival    Monstruos del rival
+     * @param trampasRival      Trampas del rival
+     * @param cartasEnManoRival Número de cartas en la mano del rival (se muestran boca abajo)
+     */
+    public void actualizarCampo(
+            ArrayList<Monstruo>    monstruosJugador,
+            ArrayList<CartaTrampa> trampasJugador,
+            ArrayList<Monstruo>    monstruosRival,
+            ArrayList<CartaTrampa> trampasRival,
+            int                    cartasEnManoRival) {
+
+        poblarMonstruos(panelCampoJugador, monstruosJugador, true);
+        poblarTrampas(panelTrampasJugador,  trampasJugador,   true);
+        poblarMonstruos(panelCampoRival,    monstruosRival,   false);
+        poblarTrampas(panelTrampasRival,    trampasRival,     false);
+        poblarManoRival(cartasEnManoRival);
+
+        revalidate();
+        repaint();
+    }
+
+    /**
+     * Muestra un diálogo de mensaje informativo (fin de juego, etc.).
+     *
+     * @param titulo  Título del diálogo
+     * @param mensaje Cuerpo HTML del mensaje
+     */
+    public void mostrarMensaje(String titulo, String mensaje) {
+        JOptionPane.showMessageDialog(this,
+            new JLabel("<html><center>" + mensaje + "</center></html>"),
+            titulo, JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    /**
+     * Muestra un diálogo de confirmación y retorna la respuesta.
+     *
+     * @return true si el usuario eligió SÍ
+     */
+    public boolean mostrarConfirmacion(String titulo, String mensaje) {
+        return JOptionPane.showConfirmDialog(this, mensaje, titulo,
+            JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION;
+    }
+
+    /**
+     * Muestra un selector de opciones y retorna el índice elegido, o -1 si
+     * el usuario cerró el diálogo.
+     */
+    public int mostrarSelector(String titulo, String mensaje, String[] opciones) {
+        return JOptionPane.showOptionDialog(this, mensaje, titulo,
+            JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE,
+            null, opciones, opciones[0]);
+    }
+
+    /**
+     * Agrega una línea al área de log y hace scroll al final.
+     */
+    public void agregarLog(String msg) {
+        logArea.append(msg + "\n");
+        logArea.setCaretPosition(logArea.getDocument().getLength());
+    }
+
+    /**
+     * Limpia la selección de carta en mano (llamar tras jugar una carta).
+     */
+    public void limpiarSeleccion() {
+        if (cartaSeleccionadaMano != null) {
+            cartaSeleccionadaMano.setSeleccionada(false);
+            cartaSeleccionadaMano = null;
+        }
+    }
+
+    /**
+     * Activa o desactiva el resaltado visual del campo rival
+     * (mientras se espera selección de objetivo).
+     */
+    public void resaltarCampoRival(boolean activar) {
+        esperandoObjetivo = activar;
+        Color border = activar ? new Color(255, 100, 50, 200) : new Color(50, 120, 50, 80);
+        panelCampoRival.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(border, activar ? 3 : 1),
+            BorderFactory.createEmptyBorder(3, 5, 3, 5)
+        ));
+        panelCampoRival.repaint();
+    }
+
+    // ════════════════════════════════════════════════════════════════════════
+    //  HELPERS PRIVADOS DE POBLACIÓN DE ZONAS
+    // ════════════════════════════════════════════════════════════════════════
+
+    private void poblarMonstruos(JPanel zone, ArrayList<Monstruo> monstruos, boolean esJugador) {
+        JPanel cartas = getCartasPanel(zone);
+        cartas.removeAll();
+        for (Monstruo m : monstruos) {
+            CartaPanel cp = new CartaPanel(m, true);
+            cp.addMouseListener(new MouseAdapter() {
+                @Override public void mouseClicked(MouseEvent e) {
+                    if (listener == null) return;
+                    if (esJugador) {
+                        // El jugador clickea su propio monstruo → quiere atacar con él
+                        listener.onAtacarConMonstruo(m);
+                    } else if (esperandoObjetivo) {
+                        // El jugador clickea un monstruo rival → selecciona objetivo
+                        listener.onSeleccionarObjetivo(m);
+                        resaltarCampoRival(false);
+                    }
+                }
+            });
+            cartas.add(cp);
+        }
+        cartas.revalidate();
+        cartas.repaint();
+    }
+
+    private void poblarTrampas(JPanel zone, ArrayList<CartaTrampa> trampas, boolean esJugador) {
         JPanel cartas = getCartasPanel(zone);
         cartas.removeAll();
         for (CartaTrampa ct : trampas) {
@@ -509,15 +474,13 @@ public class TableroJuego extends JFrame {
             if (esJugador) {
                 cp.addMouseListener(new MouseAdapter() {
                     @Override public void mouseClicked(MouseEvent e) {
+                        if (listener == null) return;
+                        // La vista pregunta confirmación y delega al listener
                         int r = JOptionPane.showConfirmDialog(TableroJuego.this,
                             "¿Activar " + ct.getNombre() + "?\n" + ct.getEfectoDescripcion(),
                             "Activar Trampa", JOptionPane.YES_NO_OPTION);
                         if (r == JOptionPane.YES_OPTION) {
-                            ct.activarEfecto(turnoActual, rival);
-                            turnoActual.getCampo().getZonaTrampas().remove(ct);
-                            agregarLog(" ¡" + turnoActual.getNombre() + " activó la trampa " + ct.getNombre() + "!");
-                            actualizarTablero();
-                            verificarFinJuego();
+                            listener.onActivarTrampa(ct);
                         }
                     }
                 });
@@ -528,33 +491,8 @@ public class TableroJuego extends JFrame {
         cartas.repaint();
     }
 
-    private void actualizarMano(JPanel zone, ArrayList<Carta> mano, boolean esJugador) {
-        JPanel cartas = getCartasPanel(zone);
-        cartas.removeAll();
-        for (Carta carta : mano) {
-            CartaPanel cp = new CartaPanel(carta);
-            if (esJugador) {
-                cp.addMouseListener(new MouseAdapter() {
-                    @Override public void mouseClicked(MouseEvent e) {
-                        if (cartaSeleccionadaMano != null) cartaSeleccionadaMano.setSeleccionada(false);
-                        if (cartaSeleccionadaMano == cp) {
-                            cartaSeleccionadaMano = null;
-                        } else {
-                            cartaSeleccionadaMano = cp;
-                            cp.setSeleccionada(true);
-                            agregarLog("🃏 Seleccionada: " + carta.getNombre() + " — " + carta.getDescripcion());
-                        }
-                    }
-                });
-            }
-            cartas.add(cp);
-        }
-        cartas.revalidate();
-        cartas.repaint();
-    }
-
-    private void actualizarManoRival(JPanel zone, int cantidad) {
-        JPanel cartas = getCartasPanel(zone);
+    private void poblarManoRival(int cantidad) {
+        JPanel cartas = getCartasPanel(panelManoRival);
         cartas.removeAll();
         for (int i = 0; i < cantidad; i++) {
             JPanel dorso = new JPanel() {
@@ -572,7 +510,7 @@ public class TableroJuego extends JFrame {
                     g2.drawString("?", getWidth()/2 - 5, getHeight()/2 + 6);
                 }
             };
-            dorso.setPreferredSize(new Dimension(80, 110));
+            dorso.setPreferredSize(new Dimension(CartaPanel.W, CartaPanel.H));
             dorso.setOpaque(false);
             cartas.add(dorso);
         }
@@ -580,115 +518,13 @@ public class TableroJuego extends JFrame {
         cartas.repaint();
     }
 
-    private void resaltarCampoRival(boolean activar) {
-        JPanel cartas = getCartasPanel(panelCampoRival);
-        Color border = activar ? new Color(255, 100, 50, 200) : new Color(50, 120, 50, 80);
-        panelCampoRival.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(border, activar ? 3 : 1),
-            BorderFactory.createEmptyBorder(3, 5, 3, 5)
-        ));
-        panelCampoRival.repaint();
-    }
-
-
-    private boolean esMiTurno() {
-        return true; 
-    }
-
-    private void verificarFinJuego() {
-        if (j1.getLp() <= 0) {
-            finalizarJuego(j2, "¡" + j1.getNombre() + " llegó a 0 LP!");
-        } else if (j2.getLp() <= 0) {
-            finalizarJuego(j1, "¡" + j2.getNombre() + " llegó a 0 LP!");
-        } else if (j1.getMazo().isEmpty() && j1.getMano().isEmpty()) {
-            finalizarJuego(j2, "¡" + j1.getNombre() + " se quedó sin cartas!");
-        } else if (j2.getMazo().isEmpty() && j2.getMano().isEmpty()) {
-            finalizarJuego(j1, "¡" + j2.getNombre() + " se quedó sin cartas!");
+    // ── Obtiene el sub-panel de cartas de una zona ───────────────────────────
+    private JPanel getCartasPanel(JPanel zone) {
+        for (Component c : zone.getComponents()) {
+            if (c instanceof JPanel && "cartas".equals(((JPanel) c).getName())) {
+                return (JPanel) c;
+            }
         }
-    }
-
-    private void finalizarJuego(Jugador ganador, String razon) {
-        actualizarTablero();
-        String msg = "<html><center>" +
-            "<h1>🏆 ¡DUELO FINALIZADO! 🏆</h1>" +
-            "<h2>Ganador: " + ganador.getNombre() + "</h2>" +
-            "<p>" + razon + "</p>" +
-            "<p><i>\"Confía en el corazón de las cartas\" — Yugi Muto</i></p>" +
-            "</center></html>";
-
-        JOptionPane.showMessageDialog(this, new JLabel(msg), "¡DUELO TERMINADO!",
-            JOptionPane.INFORMATION_MESSAGE);
-
-        int r = JOptionPane.showConfirmDialog(this, "¿Jugar otra partida?", "Revancha",
-            JOptionPane.YES_NO_OPTION);
-        dispose();
-        if (r == JOptionPane.YES_OPTION) {
-            new MenuInicial().setVisible(true);
-        }
-    }
-
-    private void agregarLog(String msg) {
-        logArea.append(msg + "\n");
-        logArea.setCaretPosition(logArea.getDocument().getLength());
-    }
-
-    // ===================== CREADOR DE MAZO =====================
-
-    private ArrayList<Carta> construirMazo() {
-        ArrayList<Carta> mazo = new ArrayList<>();
-        // 30 monstruos
-        mazo.add(new Monstruo("Dragón Blanco de Ojos Azules", 3000, 2500, 8));
-        mazo.add(new Monstruo("Mago Oscuro", 2500, 2100, 7));
-        mazo.add(new Monstruo("Calavera Invocada", 2500, 1200, 6));
-        mazo.add(new Monstruo("Dragón Negro de Ojos Rojos", 2400, 2000, 7));
-        mazo.add(new Monstruo("Jinzo", 2400, 1500, 6));
-        mazo.add(new Monstruo("Destructor de Espadas", 2600, 2300, 7));
-        mazo.add(new Monstruo("Chica Maga Oscura", 2000, 1700, 6));
-        mazo.add(new Monstruo("La Jinn", 1800, 1000, 4));
-        mazo.add(new Monstruo("Buey de Batalla", 1700, 1000, 4));
-        mazo.add(new Monstruo("Neo el Espadachín Mágico", 1700, 1000, 4));
-        mazo.add(new Monstruo("Guardián Celta", 1400, 1200, 4));
-        mazo.add(new Monstruo("Elfa Géminis", 1900, 900, 4));
-        mazo.add(new Monstruo("Soldado Archidemonio", 1900, 1500, 4));
-        mazo.add(new Monstruo("Vorcerader", 1900, 1200, 4));
-        mazo.add(new Monstruo("Gigante Soldado de Piedra", 1300, 2000, 3));
-        mazo.add(new Monstruo("Elfa Mística", 800, 2000, 4));
-        mazo.add(new Monstruo("Aqua Madoor", 1200, 2000, 4));
-        mazo.add(new Monstruo("Muro de Ilusión", 1000, 1850, 4));
-        mazo.add(new Monstruo("Segador del Espíritu", 300, 200, 3));
-        mazo.add(new Monstruo("Kuriboh", 300, 200, 1));
-        mazo.add(new Monstruo("Sangan", 1000, 600, 3));
-        mazo.add(new Monstruo("Bruja del Bosque Negro", 1100, 1200, 4));
-        mazo.add(new Monstruo("Insecto Comehombres", 450, 600, 2));
-        mazo.add(new Monstruo("Dama Arpía", 1300, 1400, 4));
-        mazo.add(new Monstruo("Hermanas Arpía", 1950, 2100, 6));
-        mazo.add(new Monstruo("Gearfried el Caballero de Hierro", 1800, 1600, 4));
-        mazo.add(new Monstruo("Fuerza Exiliada", 1000, 1000, 4));
-        mazo.add(new Monstruo("Hada de Inyección Lily", 400, 1500, 3));
-        mazo.add(new Monstruo("Mago del Tiempo", 500, 400, 2));
-        mazo.add(new Monstruo("Dragón Bebé", 1200, 700, 3));
-        // 10 magias
-        mazo.add(new CartaMagica("Olla de la Codicia", "robar"));
-        mazo.add(new CartaMagica("Polvo del Cosmos", "robar"));
-        mazo.add(new CartaMagica("Escudo Místico", "recuperar"));
-        mazo.add(new CartaMagica("Expansión Astral", "recuperar"));
-        mazo.add(new CartaMagica("Renacer del Espíritu", "recuperar"));
-        mazo.add(new CartaMagica("Universo Atómico", "destruir"));
-        mazo.add(new CartaMagica("Lluvia de Relámpagos", "destruir"));
-        mazo.add(new CartaMagica("Trampa de Araña", "destruir"));
-        mazo.add(new CartaMagica("Terraformación", "boost"));
-        mazo.add(new CartaMagica("Poder Oscuro", "boost"));
-        // 10 trampas
-        mazo.add(new CartaTrampa("Agujero Trampa", "agujero_trampa", "invocacion"));
-        mazo.add(new CartaTrampa("Fuerza Espejo", "fuerza_espejo", "ataque"));
-        mazo.add(new CartaTrampa("Negar Ataque", "negar_ataque", "ataque"));
-        mazo.add(new CartaTrampa("Cilindro Mágico", "cilindro_magico", "ataque"));
-        mazo.add(new CartaTrampa("Tributo Torrencial", "tributo_torrencial", "invocacion"));
-        mazo.add(new CartaTrampa("Agujero Trampa Sin Fondo", "agujero_sin_fondo", "invocacion"));
-        mazo.add(new CartaTrampa("Evacuación Forzada", "evacuacion_forzada", "ataque"));
-        mazo.add(new CartaTrampa("Blindaje Sakuretsu", "blindaje_sakuretsu", "ataque"));
-        mazo.add(new CartaTrampa("Protección Waboku", "proteccion_waboku", "ataque"));
-        mazo.add(new CartaTrampa("Tornado de Polvo", "tornado_polvo", "ataque"));
-        return mazo;
+        return zone;
     }
 }
