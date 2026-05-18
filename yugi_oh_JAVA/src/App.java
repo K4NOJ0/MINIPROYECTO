@@ -1,4 +1,5 @@
 import javax.swing.SwingUtilities;
+import vista.MenuInicial;
 
 public class App {
     public static void main(String[] args) {
