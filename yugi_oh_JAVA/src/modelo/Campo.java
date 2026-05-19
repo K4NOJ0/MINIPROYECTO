@@ -1,3 +1,4 @@
+package modelo;
 import java.util.ArrayList;
 
 public class Campo {
@@ -25,11 +26,11 @@ public class Campo {
         return false;
     }
 
-    public ArrayList<Monstruo> getZonaMonstruos() {
-        return zonaMonstruos;
-    }
+    public ArrayList<Monstruo> getZonaMonstruos() { return zonaMonstruos; }
+    public ArrayList<CartaTrampa> getZonaTrampas() { return zonaTrampas; }
 
-    public ArrayList<CartaTrampa> getZonaTrampas() {
-        return zonaTrampas;
+    public void limpiar() {
+        zonaMonstruos.clear();
+        zonaTrampas.clear();
     }
 }
