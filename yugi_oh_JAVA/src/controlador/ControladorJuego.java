@@ -2,10 +2,13 @@ package controlador;
 
 import java.util.ArrayList;
 import java.util.Random;
-import javax.swing.JOptionPane;
+
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 import modelo.*;
 import vista.TableroJuego;
+import persistencia.GestorArchivos;
 
 public class ControladorJuego {
     private Jugador j1, j2, turnoActual, rival;
@@ -38,7 +41,7 @@ public class ControladorJuego {
     public void robarCarta() {
         if (!esMiTurno()) return;
         if (yaRoboEsteTurno) { 
-            vista.agregarLog("⚠ Ya robaste una carta este turno."); 
+            vista.agregarLog("Ya robaste una carta este turno."); 
             return; 
         }
 
@@ -62,29 +65,28 @@ public class ControladorJuego {
             vista.agregarLog(" Ya jugaste una carta este turno."); 
             return; 
         }
-        if (cartaSeleccionadaMano == null) { 
+        
+        Carta cartaSel = vista.getCartaSeleccionada();
+        if (cartaSel == null) { 
             vista.agregarLog(" Selecciona una carta de tu mano primero."); 
             return; 
         }
 
-        // Aquí se necesita acceso a CartaPanel desde la vista
-        // Por ahora, será un placeholder
+        // Logica para jugar la carta
     }
 
     public void invocarMonstruo(Monstruo m) {
-        int modo = JOptionPane.showOptionDialog(vista,
-            "¿En qué posición invocar a " + m.getNombre() + "?",
-            "Modo de Invocación", JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE,
-            null, new String[]{"Modo Ataque", "Modo Defensa"}, "Modo Ataque");
+        int modo = vista.getDialogos().preguntarModoInvocacion(m.getNombre());
 
-        m.setEnModoAtaque(modo == 0 || modo == JOptionPane.CLOSED_OPTION);
+        m.setEnModoAtaque(modo == 0 || modo == -1); // -1 es CLOSED_OPTION
 
         if (turnoActual.getCampo().invocarMonstruo(m)) {
             turnoActual.getMano().remove(m);
-            vista.agregarLog("⚔ " + turnoActual.getNombre() + " invocó a " + m.getNombre() +
+            vista.agregarLog(turnoActual.getNombre() + " invocó a " + m.getNombre() +
                 " (" + (m.isEnModoAtaque() ? "Ataque" : "Defensa") + ")");
             yaJugoCartaEsteTurno = true;
-            cartaSeleccionadaMano = null;
+            vista.limpiarSeleccionMano();
+
         } else {
             vista.agregarLog(" Campo lleno. No puedes invocar más monstruos.");
         }
@@ -126,11 +128,11 @@ public class ControladorJuego {
     public void atacarDirecto() {
         if (!esMiTurno()) return;
         if (!rival.getCampo().getZonaMonstruos().isEmpty()) {
-            vista.agregarLog("⚠ El rival tiene monstruos. No puedes atacar directamente.");
+            vista.agregarLog("El rival tiene monstruos. No puedes atacar directamente.");
             return;
         }
         if (turnoActual.getCampo().getZonaMonstruos().isEmpty()) {
-            vista.agregarLog("⚠ No tienes monstruos para atacar.");
+            vista.agregarLog("No tienes monstruos para atacar.");
             return;
         }
 
@@ -164,7 +166,7 @@ public class ControladorJuego {
         primerTurno = false;
         yaJugoCartaEsteTurno = false;
         yaRoboEsteTurno = false;
-        cartaSeleccionadaMano = null;
+        vista.limpiarSeleccionMano();
         monstruoAtacanteSeleccionado = null;
 
         vista.agregarLog("---");
@@ -187,19 +189,22 @@ public class ControladorJuego {
     public void finalizarJuego(Jugador ganador, String razon) {
         vista.actualizarTablero();
         String msg = "<html><center>" +
-            "<h1>🏆 ¡DUELO FINALIZADO! 🏆</h1>" +
+            "<h1>¡DUELO FINALIZADO!</h1>" +
             "<h2>Ganador: " + ganador.getNombre() + "</h2>" +
             "<p>" + razon + "</p>" +
             "<p><i>\"Confía en el corazón de las cartas\" — Yugi Muto</i></p>" +
             "</center></html>";
 
-        JOptionPane.showMessageDialog(vista, msg, "¡DUELO TERMINADO!",
-            JOptionPane.INFORMATION_MESSAGE);
+        vista.getDialogos().mostrarMensajeFinJuego(msg);
 
-        int r = JOptionPane.showConfirmDialog(vista, "¿Jugar otra partida?", "Revancha",
-            JOptionPane.YES_NO_OPTION);
+        // Guardar resultado
+        String fecha = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        String logResultado = String.format("[%s] Ganador: %s | LP Finales: %d", fecha, ganador.getNombre(), ganador.getLp());
+        GestorArchivos.getInstance().guardarResultado(logResultado);
+
+        int r = vista.getDialogos().preguntarRevancha();
         vista.dispose();
-        if (r == JOptionPane.YES_OPTION) {
+        if (r == 0) { // 0 es YES_OPTION
             // Reiniciar juego
         }
     }
