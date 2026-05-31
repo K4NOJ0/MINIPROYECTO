@@ -21,6 +21,7 @@ public class TableroJuego extends JFrame {
     private JLabel lblLpJ1, lblLpJ2, lblTurno, lblMazoJ1, lblMazoJ2;
     private JTextArea logArea;
     private CartaPanel cartaSeleccionadaMano;
+    private DialogosJuego dialogos;
 
     private static final Color BG_DARK    = new Color(8, 18, 8);
     private static final Color BG_CAMPO   = new Color(15, 45, 15);
@@ -32,6 +33,7 @@ public class TableroJuego extends JFrame {
 
     public TableroJuego(ControladorJuego controlador) {
         this.controlador = controlador;
+        this.dialogos = new DialogosJuego(this);
         setTitle("Yu-Gi-Oh! — Duelo");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(1200, 800);
@@ -41,8 +43,8 @@ public class TableroJuego extends JFrame {
 
         initUI();
         actualizarTablero();
-        agregarLog("🎴 ¡El duelo comienza! Primer turno: " + controlador.getTurnoActual().getNombre());
-        agregarLog("📜 Turno de " + controlador.getTurnoActual().getNombre() + ". Haz clic en 'Robar Carta' para comenzar.");
+        agregarLog("¡El duelo comienza! Primer turno: " + controlador.getTurnoActual().getNombre());
+        agregarLog("Turno de " + controlador.getTurnoActual().getNombre() + ". Haz clic en 'Robar Carta' para comenzar.");
     }
 
     private void initUI() {
@@ -62,11 +64,11 @@ public class TableroJuego extends JFrame {
         JPanel centro = new JPanel(new GridLayout(5, 1, 3, 3));
         centro.setOpaque(false);
 
-        panelManoRival = createZonePanel("🂠 Mano del Rival", BG_RIVAL, false);
-        panelTrampasRival = createZonePanel("⬇ Zona Trampa Rival", new Color(30, 10, 10), false);
-        panelCampoRival = createZonePanel("⚔ Campo Rival", BG_CAMPO, false);
-        panelCampoJugador = createZonePanel("🛡 Tu Campo", BG_CAMPO, true);
-        panelTrampasJugador = createZonePanel("⬇ Tu Zona Trampa", new Color(10, 30, 10), true);
+        panelManoRival = createZonePanel("Mano del Rival", BG_RIVAL, false);
+        panelTrampasRival = createZonePanel("Zona Trampa Rival", new Color(30, 10, 10), false);
+        panelCampoRival = createZonePanel("Campo Rival", BG_CAMPO, false);
+        panelCampoJugador = createZonePanel("Tu Campo", BG_CAMPO, true);
+        panelTrampasJugador = createZonePanel("Tu Zona Trampa", new Color(10, 30, 10), true);
 
         centro.add(panelManoRival);
         centro.add(panelTrampasRival);
@@ -80,7 +82,7 @@ public class TableroJuego extends JFrame {
         bottom.setOpaque(false);
         bottom.setPreferredSize(new Dimension(0, 200));
 
-        panelManoJugador = createZonePanel("🃏 Tu Mano", new Color(10, 30, 10), true);
+        panelManoJugador = createZonePanel("Tu Mano", new Color(10, 30, 10), true);
         panelManoJugador.setPreferredSize(new Dimension(600, 180));
         bottom.add(panelManoJugador, BorderLayout.CENTER);
 
@@ -119,11 +121,11 @@ public class TableroJuego extends JFrame {
         hud.setPreferredSize(new Dimension(0, 60));
         hud.setBorder(BorderFactory.createMatteBorder(0, 0, 2, 0, GOLD));
 
-        lblLpJ1 = createHUDLabel("❤ J1: 8000 LP", RED_HP);
-        lblMazoJ1 = createHUDLabel("🂠 Mazo: 20", Color.LIGHT_GRAY);
+        lblLpJ1 = createHUDLabel("J1: 8000 LP", RED_HP);
+        lblMazoJ1 = createHUDLabel("Mazo: 20", Color.LIGHT_GRAY);
         lblTurno = createHUDLabel("TURNO", GOLD);
-        lblMazoJ2 = createHUDLabel("🂠 Mazo: 20", Color.LIGHT_GRAY);
-        lblLpJ2 = createHUDLabel("❤ J2: 8000 LP", BLUE_HP);
+        lblMazoJ2 = createHUDLabel("Mazo: 20", Color.LIGHT_GRAY);
+        lblLpJ2 = createHUDLabel("J2: 8000 LP", BLUE_HP);
 
         hud.add(lblLpJ1);
         hud.add(lblMazoJ1);
@@ -172,16 +174,16 @@ public class TableroJuego extends JFrame {
         JPanel p = new JPanel(new GridLayout(2, 2, 5, 5));
         p.setOpaque(false);
 
-        JButton btnRobar = createBtn("🃏 Robar Carta", new Color(50, 100, 200));
+        JButton btnRobar = createBtn("Robar Carta", new Color(50, 100, 200));
         btnRobar.addActionListener(e -> controlador.robarCarta());
 
-        JButton btnJugar = createBtn("▶ Jugar Carta", new Color(60, 150, 60));
+        JButton btnJugar = createBtn("Jugar Carta", new Color(60, 150, 60));
         btnJugar.addActionListener(e -> controlador.jugarCartaSeleccionada());
 
-        JButton btnAtacarDirecto = createBtn("⚡ Ataque Directo", new Color(180, 80, 0));
+        JButton btnAtacarDirecto = createBtn("Ataque Directo", new Color(180, 80, 0));
         btnAtacarDirecto.addActionListener(e -> controlador.atacarDirecto());
 
-        JButton btnTerminarTurno = createBtn("⏭ Terminar Turno", new Color(120, 50, 120));
+        JButton btnTerminarTurno = createBtn("Terminar Turno", new Color(120, 50, 120));
         btnTerminarTurno.addActionListener(e -> controlador.terminarTurno());
 
         p.add(btnRobar);
@@ -279,7 +281,7 @@ public class TableroJuego extends JFrame {
                         } else {
                             cartaSeleccionadaMano = cp;
                             cp.setSeleccionada(true);
-                            agregarLog("🃏 Seleccionada: " + carta.getNombre());
+                            agregarLog("Seleccionada: " + carta.getNombre());
                         }
                     }
                 });
@@ -329,5 +331,23 @@ public class TableroJuego extends JFrame {
     public void agregarLog(String msg) {
         logArea.append(msg + "\n");
         logArea.setCaretPosition(logArea.getDocument().getLength());
+    }
+
+    public Carta getCartaSeleccionada() {
+        if (cartaSeleccionadaMano != null) {
+            return cartaSeleccionadaMano.getCarta();
+        }
+        return null;
+    }
+
+    public void limpiarSeleccionMano() {
+        if (cartaSeleccionadaMano != null) {
+            cartaSeleccionadaMano.setSeleccionada(false);
+            cartaSeleccionadaMano = null;
+        }
+    }
+
+    public DialogosJuego getDialogos() {
+        return dialogos;
     }
 }
