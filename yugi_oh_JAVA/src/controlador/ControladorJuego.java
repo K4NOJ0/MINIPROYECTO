@@ -2,228 +2,369 @@ package controlador;
 
 import java.util.ArrayList;
 import java.util.Random;
-
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 import modelo.*;
-import vista.TableroJuego;
+import patrones.EstadoPartida;
+import patrones.GestorMementos;
 import persistencia.GestorArchivos;
+import persistencia.PartidaSerializer;
+import persistencia.PartidaSerializer.DatosJugador;
+import persistencia.PartidaSerializer.DatosPartida;
+import vista.TableroJuego;
 
-public class ControladorJuego {
+public class ControladorJuego implements TableroJuego.TableroListener {
+
     private Jugador j1, j2, turnoActual, rival;
-    private Juego juego;
+    private Juego   juego;
     private boolean primerTurno;
     private boolean yaJugoCartaEsteTurno;
     private boolean yaRoboEsteTurno;
-    private Object cartaSeleccionadaMano;
+    private Carta   cartaSeleccionadaMano;
     private Monstruo monstruoAtacanteSeleccionado;
     private TableroJuego vista;
+
+    // GestorMementos usa un Stack internamente para guardar estados (undo)
+    private GestorMementos gestorMementos = new GestorMementos();
+
+    private static final String ARCHIVO_PARTIDA = "partida_guardada.txt";
 
     public ControladorJuego(String nombre1, String nombre2, TableroJuego vista) {
         this.vista = vista;
         this.juego = new Juego();
-        this.j1 = new Jugador(nombre1);
-        this.j2 = new Jugador(nombre2);
+        this.j1    = new Jugador(nombre1);
+        this.j2    = new Jugador(nombre2);
 
         ArrayList<Carta> mazo = construirMazo();
         juego.repartirCartas(j1, j2, mazo);
 
         turnoActual = new Random().nextBoolean() ? j1 : j2;
-        rival = (turnoActual == j1) ? j2 : j1;
-        primerTurno = true;
+        rival       = (turnoActual == j1) ? j2 : j1;
+        primerTurno          = true;
         yaJugoCartaEsteTurno = false;
-        yaRoboEsteTurno = false;
-        cartaSeleccionadaMano = null;
+        yaRoboEsteTurno      = false;
+        cartaSeleccionadaMano        = null;
         monstruoAtacanteSeleccionado = null;
     }
 
-    public void robarCarta() {
-        if (!esMiTurno()) return;
-        if (yaRoboEsteTurno) { 
-            vista.agregarLog("Ya robaste una carta este turno."); 
-            return; 
+    // ════════════════════════════════════════════════════════════════════════
+    //  IMPLEMENTACIÓN DE TableroListener
+    // ════════════════════════════════════════════════════════════════════════
+
+    @Override public void onRobarCarta()               { robarCarta(); }
+    @Override public void onAtacarConMonstruo(Monstruo m) { atacarConMonstruo(m); }
+    @Override public void onAtacarDirecto()            { atacarDirecto(); }
+    @Override public void onTerminarTurno()            { terminarTurno(); }
+
+    @Override
+    public void onJugarCarta(Carta carta) {
+        this.cartaSeleccionadaMano = carta;
+        jugarCartaSeleccionada();
+    }
+
+    @Override
+    public void onSeleccionarObjetivo(Monstruo objetivo) {
+        if (monstruoAtacanteSeleccionado == null) return;
+        String result = juego.atacarMonstruo(monstruoAtacanteSeleccionado, objetivo, turnoActual, rival);
+        vista.agregarLog(result);
+        monstruoAtacanteSeleccionado = null;
+        actualizarVista();
+        verificarFinJuego();
+    }
+
+    @Override
+    public void onActivarTrampa(CartaTrampa trampa) {
+        vista.agregarLog(" Trampa activada: " + trampa.getNombre());
+        actualizarVista();
+    }
+
+    // ── GUARDAR PARTIDA ──────────────────────────────────────────────────────
+    @Override
+    public void onGuardarPartida() {
+        // 1. Guarda el estado actual en el GestorMementos (Stack de undo)
+        EstadoPartida estado = new EstadoPartida(turnoActual, j1, j2);
+        gestorMementos.guardarEstado(estado);
+
+        // 2. Serializa el estado a texto con BufferedWriter (via GestorArchivos)
+        String contenido = PartidaSerializer.serializar(estado);
+        GestorArchivos.getInstance().guardarPartida(ARCHIVO_PARTIDA, contenido);
+
+        vista.agregarLog("💾 Partida guardada correctamente.");
+        vista.mostrarMensaje("Partida Guardada",
+            "La partida fue guardada en:\n" + ARCHIVO_PARTIDA);
+    }
+
+    // ── CARGAR PARTIDA ───────────────────────────────────────────────────────
+    @Override
+    public void onCargarPartida() {
+        // 1. Lee el archivo con BufferedReader (via GestorArchivos)
+        String contenido = GestorArchivos.getInstance().cargarPartida(ARCHIVO_PARTIDA);
+
+        if (contenido == null || contenido.isBlank()) {
+            vista.mostrarMensaje("Error", "No hay ninguna partida guardada.");
+            vista.agregarLog("📂 No se encontró partida guardada.");
+            return;
         }
 
-        if (turnoActual.getMazo().isEmpty()) {
+        // 2. Deserializa el texto a objetos
+        DatosPartida datos = PartidaSerializer.deserializar(contenido);
+        if (datos == null || datos.j1 == null || datos.j2 == null) {
+            vista.mostrarMensaje("Error", "El archivo de partida está corrupto.");
+            return;
+        }
+
+        // 3. Restaura el estado de los jugadores
+        restaurarJugador(j1, datos.j1);
+        restaurarJugador(j2, datos.j2);
+
+        // 4. Restaura el turno
+        if (datos.nombreTurnoActual.equals(j1.getNombre())) {
+            turnoActual = j1; rival = j2;
+        } else {
+            turnoActual = j2; rival = j1;
+        }
+
+        // 5. Reinicia flags del turno
+        yaRoboEsteTurno      = false;
+        yaJugoCartaEsteTurno = false;
+        cartaSeleccionadaMano        = null;
+        monstruoAtacanteSeleccionado = null;
+        primerTurno = false;
+
+        actualizarVista();
+        vista.agregarLog("📂 Partida cargada. Turno de: " + turnoActual.getNombre());
+        vista.mostrarMensaje("Partida Cargada", "La partida fue restaurada correctamente.");
+    }
+
+    /**
+     * Restaura el estado de un Jugador a partir de los datos deserializados.
+     */
+    private void restaurarJugador(Jugador jugador, DatosJugador datos) {
+        jugador.setLp(datos.lp);
+
+        // Limpiar estado actual
+        jugador.getCampo().limpiar();
+        jugador.getMazoStack().clear();
+        jugador.getManoLinked().clear();
+
+        // Restaurar mano
+        for (Carta c : datos.mano)  jugador.getManoLinked().add(c);
+
+        // Restaurar mazo (push en orden inverso para mantener el orden original)
+        for (int i = datos.mazo.size() - 1; i >= 0; i--) {
+            jugador.getMazoStack().push(datos.mazo.get(i));
+        }
+
+        // Restaurar campo de monstruos
+        for (Monstruo m : datos.campoMonstruos) {
+            jugador.getCampo().invocarMonstruo(m);
+        }
+
+        // Restaurar zona de trampas
+        for (CartaTrampa t : datos.campoTrampas) {
+            jugador.getCampo().colocarTrampa(t);
+        }
+    }
+
+    // ════════════════════════════════════════════════════════════════════════
+    //  LÓGICA DE JUEGO
+    // ════════════════════════════════════════════════════════════════════════
+
+    public void robarCarta() {
+        if (yaRoboEsteTurno) {
+            vista.agregarLog(" Ya robaste una carta este turno.");
+            return;
+        }
+        if (turnoActual.getMazoStack().isEmpty()) {
             finalizarJuego(rival, "¡Se quedó sin cartas en el mazo!");
             return;
         }
         turnoActual.robarCarta();
         yaRoboEsteTurno = true;
-        vista.agregarLog(" " + turnoActual.getNombre() + " robó una carta. Mano: " + turnoActual.getMano().size());
-        vista.actualizarTablero();
+        vista.agregarLog(" " + turnoActual.getNombre() + " robó una carta. Mano: "
+            + turnoActual.getMano().size());
+        actualizarVista();
     }
 
     public void jugarCartaSeleccionada() {
-        if (!esMiTurno()) return;
-        if (!yaRoboEsteTurno) { 
-            vista.agregarLog(" Debes robar una carta primero."); 
-            return; 
+        if (!yaRoboEsteTurno) {
+            vista.agregarLog(" Debes robar una carta primero."); return;
         }
-        if (yaJugoCartaEsteTurno) { 
-            vista.agregarLog(" Ya jugaste una carta este turno."); 
-            return; 
+        if (yaJugoCartaEsteTurno) {
+            vista.agregarLog(" Ya jugaste una carta este turno."); return;
         }
-        
-        Carta cartaSel = vista.getCartaSeleccionada();
-        if (cartaSel == null) { 
-            vista.agregarLog(" Selecciona una carta de tu mano primero."); 
-            return; 
+        if (cartaSeleccionadaMano == null) {
+            vista.agregarLog(" Selecciona una carta de tu mano primero."); return;
         }
-
-        // Logica para jugar la carta
+        if      (cartaSeleccionadaMano instanceof Monstruo)   invocarMonstruo((Monstruo)   cartaSeleccionadaMano);
+        else if (cartaSeleccionadaMano instanceof CartaTrampa) colocarTrampa((CartaTrampa)  cartaSeleccionadaMano);
+        else if (cartaSeleccionadaMano instanceof CartaMagica) activarMagica((CartaMagica)  cartaSeleccionadaMano);
     }
 
     public void invocarMonstruo(Monstruo m) {
-        int modo = vista.getDialogos().preguntarModoInvocacion(m.getNombre());
-
-        m.setEnModoAtaque(modo == 0 || modo == -1); // -1 es CLOSED_OPTION
+        int modo = vista.mostrarSelector("Modo de Invocación",
+            "¿Cómo deseas invocar a " + m.getNombre() + "?",
+            new String[]{"Ataque", "Defensa"});
+        m.setEnModoAtaque(modo == 0 || modo == -1);
 
         if (turnoActual.getCampo().invocarMonstruo(m)) {
-            turnoActual.getMano().remove(m);
-            vista.agregarLog(turnoActual.getNombre() + " invocó a " + m.getNombre() +
-                " (" + (m.isEnModoAtaque() ? "Ataque" : "Defensa") + ")");
+            turnoActual.getManoLinked().remove(m);
+            vista.agregarLog(turnoActual.getNombre() + " invocó a " + m.getNombre()
+                + " (" + (m.isEnModoAtaque() ? "Ataque" : "Defensa") + ")");
             yaJugoCartaEsteTurno = true;
-            vista.limpiarSeleccionMano();
-
+            cartaSeleccionadaMano = null;
+            vista.limpiarSeleccion();
+            actualizarVista();
         } else {
             vista.agregarLog(" Campo lleno. No puedes invocar más monstruos.");
         }
     }
 
-    public void atacarConMonstruo(Monstruo atacante) {
-        if (!esMiTurno()) return;
-        if (!yaRoboEsteTurno) { 
-            vista.agregarLog(" Debes robar primero."); 
-            return; 
+    public void colocarTrampa(CartaTrampa t) {
+        if (turnoActual.getCampo().colocarTrampa(t)) {
+            turnoActual.getManoLinked().remove(t);
+            vista.agregarLog(turnoActual.getNombre() + " colocó una trampa boca abajo.");
+            yaJugoCartaEsteTurno = true;
+            cartaSeleccionadaMano = null;
+            vista.limpiarSeleccion();
+            actualizarVista();
+        } else {
+            vista.agregarLog(" Zona de trampas llena.");
         }
-        if (primerTurno && turnoActual == (rival == j2 ? j1 : j2)) {
-            vista.agregarLog(" No puedes atacar en el primer turno.");
-            return;
-        }
-        if (atacante.isYaAtaco()) { 
-            vista.agregarLog(" " + atacante.getNombre() + " ya atacó este turno."); 
-            return; 
-        }
-        if (!atacante.isEnModoAtaque()) { 
-            vista.agregarLog(" Solo los monstruos en modo Ataque pueden atacar."); 
-            return; 
-        }
+    }
 
+    public void activarMagica(CartaMagica m) {
+        String resultado = juego.aplicarEfectoMagica(m, turnoActual, rival);
+        turnoActual.getManoLinked().remove(m);
+        vista.agregarLog(resultado);
+        yaJugoCartaEsteTurno = true;
+        cartaSeleccionadaMano = null;
+        vista.limpiarSeleccion();
+        actualizarVista();
+    }
+
+    public void atacarConMonstruo(Monstruo atacante) {
+        if (!yaRoboEsteTurno) { vista.agregarLog(" Debes robar primero."); return; }
+        if (primerTurno)      { vista.agregarLog(" No puedes atacar en el primer turno."); return; }
+        if (atacante.isYaAtaco()) {
+            vista.agregarLog(" " + atacante.getNombre() + " ya atacó este turno."); return;
+        }
+        if (!atacante.isEnModoAtaque()) {
+            vista.agregarLog(" Solo los monstruos en modo Ataque pueden atacar."); return;
+        }
         if (rival.getCampo().getZonaMonstruos().isEmpty()) {
             String result = juego.atacarDirecto(atacante, rival);
             vista.agregarLog(result);
+            actualizarVista();
+            verificarFinJuego();
         } else {
             monstruoAtacanteSeleccionado = atacante;
-            vista.agregarLog(" " + atacante.getNombre() + " listo para atacar. Selecciona el monstruo objetivo en el campo rival.");
+            vista.agregarLog(" " + atacante.getNombre() + " listo para atacar. Selecciona el objetivo.");
             vista.resaltarCampoRival(true);
-            return;
         }
-
-        vista.actualizarTablero();
-        verificarFinJuego();
     }
 
     public void atacarDirecto() {
-        if (!esMiTurno()) return;
         if (!rival.getCampo().getZonaMonstruos().isEmpty()) {
-            vista.agregarLog("El rival tiene monstruos. No puedes atacar directamente.");
-            return;
+            vista.agregarLog(" El rival tiene monstruos."); return;
         }
         if (turnoActual.getCampo().getZonaMonstruos().isEmpty()) {
-            vista.agregarLog("No tienes monstruos para atacar.");
-            return;
+            vista.agregarLog(" No tienes monstruos para atacar."); return;
         }
-
         for (Monstruo m : turnoActual.getCampo().getZonaMonstruos()) {
-            if (!m.isYaAtaco() && m.isEnModoAtaque()) {
-                atacarConMonstruo(m);
-                return;
-            }
+            if (!m.isYaAtaco() && m.isEnModoAtaque()) { atacarConMonstruo(m); return; }
         }
         vista.agregarLog(" Ningún monstruo puede atacar directamente.");
     }
 
     public void terminarTurno() {
-        if (!esMiTurno()) return;
-
         turnoActual.resetTurno();
 
         for (CartaTrampa t : turnoActual.getCampo().getZonaTrampas()) {
             if (t.getIdEfecto().equals("proteccion_waboku") && t.isActiva()) {
                 turnoActual.setWabokuActivo(true);
-                turnoActual.getCampo().getZonaTrampas().remove(t);
-                vista.agregarLog(" Waboku activado para proteger a " + turnoActual.getNombre() + " este turno.");
+                turnoActual.getCampo().getZonaTrampasLinked().remove(t);
+                vista.agregarLog(" Waboku activado para " + turnoActual.getNombre());
                 break;
             }
         }
 
-        Jugador temp = turnoActual;
-        turnoActual = rival;
-        rival = temp;
+        Jugador temp = turnoActual; turnoActual = rival; rival = temp;
 
-        primerTurno = false;
+        primerTurno          = false;
         yaJugoCartaEsteTurno = false;
-        yaRoboEsteTurno = false;
-        vista.limpiarSeleccionMano();
+        yaRoboEsteTurno      = false;
+        cartaSeleccionadaMano        = null;
         monstruoAtacanteSeleccionado = null;
+        vista.limpiarSeleccion();
 
         vista.agregarLog("---");
-        vista.agregarLog(" Turno de " + turnoActual.getNombre() + ". Haz clic en 'Robar Carta' para comenzar.");
-        vista.actualizarTablero();
+        vista.agregarLog(" Turno de " + turnoActual.getNombre() + ". Haz clic en 'Robar Carta'.");
+        actualizarVista();
     }
 
     public void verificarFinJuego() {
-        if (j1.getLp() <= 0) {
-            finalizarJuego(j2, "¡" + j1.getNombre() + " llegó a 0 LP!");
-        } else if (j2.getLp() <= 0) {
-            finalizarJuego(j1, "¡" + j2.getNombre() + " llegó a 0 LP!");
-        } else if (j1.getMazo().isEmpty() && j1.getMano().isEmpty()) {
+        if (j1.getLp() <= 0) finalizarJuego(j2, "¡" + j1.getNombre() + " llegó a 0 LP!");
+        else if (j2.getLp() <= 0) finalizarJuego(j1, "¡" + j2.getNombre() + " llegó a 0 LP!");
+        else if (j1.getMazoStack().isEmpty() && j1.getMano().isEmpty())
             finalizarJuego(j2, "¡" + j1.getNombre() + " se quedó sin cartas!");
-        } else if (j2.getMazo().isEmpty() && j2.getMano().isEmpty()) {
+        else if (j2.getMazoStack().isEmpty() && j2.getMano().isEmpty())
             finalizarJuego(j1, "¡" + j2.getNombre() + " se quedó sin cartas!");
-        }
     }
 
     public void finalizarJuego(Jugador ganador, String razon) {
-        vista.actualizarTablero();
-        String msg = "<html><center>" +
-            "<h1>¡DUELO FINALIZADO!</h1>" +
-            "<h2>Ganador: " + ganador.getNombre() + "</h2>" +
-            "<p>" + razon + "</p>" +
-            "<p><i>\"Confía en el corazón de las cartas\" — Yugi Muto</i></p>" +
-            "</center></html>";
+        actualizarVista();
+        vista.mostrarMensaje("¡Duelo Finalizado!",
+            "Ganador: " + ganador.getNombre() + "\n" + razon +
+            "\n\"Confía en el corazón de las cartas\" — Yugi Muto");
 
-        vista.getDialogos().mostrarMensajeFinJuego(msg);
+        String fecha = LocalDateTime.now()
+            .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        GestorArchivos.getInstance().guardarResultado(
+            String.format("[%s] Ganador: %s | LP Finales: %d",
+                fecha, ganador.getNombre(), ganador.getLp()));
 
-        // Guardar resultado
-        String fecha = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-        String logResultado = String.format("[%s] Ganador: %s | LP Finales: %d", fecha, ganador.getNombre(), ganador.getLp());
-        GestorArchivos.getInstance().guardarResultado(logResultado);
-
-        int r = vista.getDialogos().preguntarRevancha();
+        boolean revancha = vista.mostrarConfirmacion("Revancha", "¿Deseas jugar de nuevo?");
         vista.dispose();
-        if (r == 0) { // 0 es YES_OPTION
-            // Reiniciar juego
+        if (revancha) {
+            TableroJuego nuevoTablero = new TableroJuego(j1.getNombre(), j2.getNombre());
+            ControladorJuego nuevo    = new ControladorJuego(j1.getNombre(), j2.getNombre(), nuevoTablero);
+            nuevoTablero.setTableroListener(nuevo);
+            nuevoTablero.setVisible(true);
         }
     }
 
-    private boolean esMiTurno() {
-        return true;
+    // ── Helper visual ─────────────────────────────────────────────────────────
+
+    private void actualizarVista() {
+        vista.actualizarHUD(j1.getLp(), j2.getLp(),
+            j1.getMazoStack().size(), j2.getMazoStack().size(),
+            turnoActual.getNombre());
+        vista.actualizarMano(turnoActual.getMano());
+        vista.actualizarCampo(
+            turnoActual.getCampo().getZonaMonstruos(),
+            turnoActual.getCampo().getZonaTrampas(),
+            rival.getCampo().getZonaMonstruos(),
+            rival.getCampo().getZonaTrampas(),
+            rival.getMano().size());
     }
 
-    public Jugador getJ1() { return j1; }
-    public Jugador getJ2() { return j2; }
-    public Jugador getTurnoActual() { return turnoActual; }
-    public Jugador getRival() { return rival; }
-    public Juego getJuego() { return juego; }
-    public boolean isPrimerTurno() { return primerTurno; }
+    // ── Getters / Setters ─────────────────────────────────────────────────────
+
+    public Jugador getJ1()                  { return j1; }
+    public Jugador getJ2()                  { return j2; }
+    public Jugador getTurnoActual()         { return turnoActual; }
+    public Jugador getRival()               { return rival; }
+    public Juego   getJuego()               { return juego; }
+    public boolean isPrimerTurno()          { return primerTurno; }
     public boolean isYaJugoCartaEsteTurno() { return yaJugoCartaEsteTurno; }
-    public boolean isYaRoboEsteTurno() { return yaRoboEsteTurno; }
+    public boolean isYaRoboEsteTurno()      { return yaRoboEsteTurno; }
     public Monstruo getMonstruoAtacanteSeleccionado() { return monstruoAtacanteSeleccionado; }
     public void setMonstruoAtacanteSeleccionado(Monstruo m) { this.monstruoAtacanteSeleccionado = m; }
-    public void setVista(TableroJuego v) { this.vista = v; }
+    public void setVista(TableroJuego v)    { this.vista = v; }
+
+    // ── Construcción del mazo ─────────────────────────────────────────────────
 
     private ArrayList<Carta> construirMazo() {
         ArrayList<Carta> mazo = new ArrayList<>();
@@ -257,7 +398,6 @@ public class ControladorJuego {
         mazo.add(new Monstruo("Hada de Inyección Lily", 400, 1500, 3));
         mazo.add(new Monstruo("Mago del Tiempo", 500, 400, 2));
         mazo.add(new Monstruo("Dragón Bebé", 1200, 700, 3));
-        
         mazo.add(new CartaMagica("Olla de la Codicia", "robar"));
         mazo.add(new CartaMagica("Polvo del Cosmos", "robar"));
         mazo.add(new CartaMagica("Escudo Místico", "recuperar"));
@@ -268,7 +408,6 @@ public class ControladorJuego {
         mazo.add(new CartaMagica("Trampa de Araña", "destruir"));
         mazo.add(new CartaMagica("Terraformación", "boost"));
         mazo.add(new CartaMagica("Poder Oscuro", "boost"));
-        
         mazo.add(new CartaTrampa("Agujero Trampa", "agujero_trampa", "invocacion"));
         mazo.add(new CartaTrampa("Fuerza Espejo", "fuerza_espejo", "ataque"));
         mazo.add(new CartaTrampa("Negar Ataque", "negar_ataque", "ataque"));
@@ -279,6 +418,7 @@ public class ControladorJuego {
         mazo.add(new CartaTrampa("Blindaje Sakuretsu", "blindaje_sakuretsu", "ataque"));
         mazo.add(new CartaTrampa("Protección Waboku", "proteccion_waboku", "ataque"));
         mazo.add(new CartaTrampa("Tornado de Polvo", "tornado_polvo", "ataque"));
+        for (Carta c : mazo) juego.registrarCarta(c);
         return mazo;
     }
 }
