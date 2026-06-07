@@ -1,0 +1,10 @@
+modelo.CartaTrampa;Agujero Trampa;agujero_trampa;invocacion
+modelo.CartaTrampa;Fuerza Espejo;fuerza_espejo;ataque
+modelo.CartaTrampa;Negar Ataque;negar_ataque;ataque
+modelo.CartaTrampa;Cilindro Mágico;cilindro_magico;ataque
+modelo.CartaTrampa;Tributo Torrencial;tributo_torrencial;invocacion
+modelo.CartaTrampa;Agujero Trampa Sin Fondo;agujero_sin_fondo;invocacion
+modelo.CartaTrampa;Evacuación Forzada;evacuacion_forzada;ataque
+modelo.CartaTrampa;Blindaje Sakuretsu;blindaje_sakuretsu;ataque
+modelo.CartaTrampa;Protección Waboku;proteccion_waboku;ataque
+modelo.CartaTrampa;Tornado de Polvo;tornado_polvo;ataque

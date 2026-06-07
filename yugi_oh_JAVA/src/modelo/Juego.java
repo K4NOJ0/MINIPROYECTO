@@ -47,21 +47,36 @@ public class Juego {
         Collections.shuffle(mazo);
     }
 
-    public void repartirCartas(Jugador j1, Jugador j2, ArrayList<Carta> mazo) {
-        ArrayList<Carta> mazoBarajado = new ArrayList<>(mazo);
-        Collections.shuffle(mazoBarajado);
-        for (Carta c : mazoBarajado) registrarCarta(c);
+   public void repartirCartas(
+        Jugador j1,
+        Jugador j2,
+        ArrayList<Carta> mazo) {
 
-        for (int i = 0;  i < 25; i++) j1.getMazoStack().push(mazoBarajado.get(i));
-        for (int i = 25; i < 50; i++) j2.getMazoStack().push(mazoBarajado.get(i));
+    ArrayList<Carta> mazoBarajado =
+            new ArrayList<>(mazo);
 
-        for (int i = 0; i < 5; i++) {
-            j1.robarCarta();
-            j2.robarCarta();
-        }
-        encolarEvento("Cartas repartidas. Cada jugador tiene 5 cartas en mano.");
+    Collections.shuffle(mazoBarajado);
+
+    for (Carta c : mazoBarajado) {
+        registrarCarta(c);
     }
 
+    for (int i = 0; i < mazoBarajado.size(); i++) {
+
+        if (i % 2 == 0)
+            j1.getMazoStack().push(mazoBarajado.get(i));
+        else
+            j2.getMazoStack().push(mazoBarajado.get(i));
+    }
+
+    for (int i = 0; i < 5; i++) {
+        j1.robarCarta();
+        j2.robarCarta();
+    }
+
+    encolarEvento(
+            "Cartas repartidas. Cada jugador tiene 5 cartas.");
+}
     public void iniciarJuego(Jugador j1, Jugador j2) {
         jugadorActual = j1;
         turnoActual   = 1;
