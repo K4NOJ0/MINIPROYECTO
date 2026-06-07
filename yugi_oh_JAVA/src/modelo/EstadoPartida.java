@@ -1,4 +1,4 @@
-package patrones;
+package modelo;
 
 import java.util.ArrayList;
 import modelo.Carta;

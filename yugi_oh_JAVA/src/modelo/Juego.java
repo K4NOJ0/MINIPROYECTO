@@ -1,7 +1,7 @@
 package modelo;
 
 import java.util.*;
-import excepciones.CartaInvalidaException;
+import modelo.CartaInvalidaException;
 
 public class Juego {
 

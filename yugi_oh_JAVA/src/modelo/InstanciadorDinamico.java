@@ -1,4 +1,4 @@
-package reflection;
+package modelo;
 
 import modelo.Carta;
 import java.lang.reflect.Constructor;

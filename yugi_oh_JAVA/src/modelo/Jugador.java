@@ -3,7 +3,7 @@ package modelo;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Stack;
-import excepciones.MazoVacioException;
+import modelo.MazoVacioException;
 
 public class Jugador {
 

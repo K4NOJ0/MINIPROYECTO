@@ -1,6 +1,7 @@
-package estadisticas;
+package vista;
 
-import estadisticas.AnalizadorEstadisticas.RegistroPartida;
+import modelo.AnalizadorEstadisticas;
+import modelo.AnalizadorEstadisticas.RegistroPartida;
 
 import javax.swing.*;
 import javax.swing.border.*;

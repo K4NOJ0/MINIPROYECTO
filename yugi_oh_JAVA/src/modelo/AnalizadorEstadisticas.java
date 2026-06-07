@@ -1,6 +1,6 @@
-package estadisticas;
+package modelo;
 
-import persistencia.GestorArchivos;
+import modelo.GestorArchivos;
 import java.util.*;
 import java.util.regex.*;
 

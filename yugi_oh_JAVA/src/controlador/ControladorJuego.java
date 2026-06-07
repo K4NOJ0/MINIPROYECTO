@@ -1,19 +1,19 @@
 
 package controlador;
-import persistencia.CargadorCartas;
-import persistencia.CargadorCartas;
+import modelo.CargadorCartas;
+import modelo.CargadorCartas;
 import java.util.ArrayList;
 import java.util.Random;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 import modelo.*;
-import patrones.EstadoPartida;
-import patrones.GestorMementos;
-import persistencia.GestorArchivos;
-import persistencia.PartidaSerializer;
-import persistencia.PartidaSerializer.DatosJugador;
-import persistencia.PartidaSerializer.DatosPartida;
+import modelo.EstadoPartida;
+import modelo.GestorMementos;
+import modelo.GestorArchivos;
+import modelo.PartidaSerializer;
+import modelo.PartidaSerializer.DatosJugador;
+import modelo.PartidaSerializer.DatosPartida;
 import vista.TableroJuego;
 
 public class ControladorJuego implements TableroJuego.TableroListener {

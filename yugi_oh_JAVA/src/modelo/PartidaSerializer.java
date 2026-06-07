@@ -1,8 +1,8 @@
-package persistencia;
+package modelo;
 
 import modelo.*;
-import patrones.EstadoPartida;
-import patrones.EstadoPartida.EstadoJugador;
+import modelo.EstadoPartida;
+import modelo.EstadoPartida.EstadoJugador;
 
 import java.util.ArrayList;
 
