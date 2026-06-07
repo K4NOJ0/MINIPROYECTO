@@ -16,8 +16,12 @@ public class InstanciadorDinamico {
                     parameterTypes[i] = args[i].getClass();
                 }
             }
-            Constructor<?> constructor = clazz.getConstructor(parameterTypes);
-            return (Carta) constructor.newInstance(args);
+           Constructor<?> constructor =
+        clazz.getDeclaredConstructor(parameterTypes);
+
+constructor.setAccessible(true);
+
+return (Carta) constructor.newInstance(args);
         } catch (Exception e) {
             e.printStackTrace();
             return null;

@@ -1,0 +1,19 @@
+[PARTIDA]
+TurnoActual=CUERVO_EL_MEJOR
+
+[JUGADOR1]
+Nombre=CUERVO_EL_MEJOR
+LP=8000
+Mano=Polvo del Cosmos|Magia,Dragón Blanco de Ojos Azules|Monstruo,Negar Ataque|Trampa,Trampa de Araña|Magia,Escudo Místico|Magia,Bruja del Bosque Negro|Monstruo
+Mazo=Kuriboh|Monstruo,Dragón Bebé|Monstruo,Protección Waboku|Trampa,Dama Arpía|Monstruo,Universo Atómico|Magia,Tornado de Polvo|Trampa,Mago del Tiempo|Monstruo,Dragón Negro de Ojos Rojos|Monstruo,Hada de Inyección Lily|Monstruo,Cilindro Mágico|Trampa,Olla de la Codicia|Magia,Mago Oscuro|Monstruo,Neo el Espadachín Mágico|Monstruo,Expansión Astral|Magia,Insecto Comehombres|Monstruo,Hermanas Arpía|Monstruo,Aqua Madoor|Monstruo,Evacuación Forzada|Trampa
+CampoMonstruos=Buey de Batalla|ATK|NO_ATACO
+CampoTrampas=
+
+[JUGADOR2]
+Nombre=CEBOLLAS
+LP=8000
+Mano=Chica Maga Oscura|Monstruo,Elfa Mística|Monstruo,Terraformación|Magia,Muro de Ilusión|Monstruo,Renacer del Espíritu|Magia,Sangan|Monstruo
+Mazo=Fuerza Espejo|Trampa,Gearfried el Caballero de Hierro|Monstruo,Jinzo|Monstruo,Soldado Archidemonio|Monstruo,Blindaje Sakuretsu|Trampa,Fuerza Exiliada|Monstruo,Lluvia de Relámpagos|Magia,Vorcerader|Monstruo,Agujero Trampa Sin Fondo|Trampa,La Jinn|Monstruo,Elfa Géminis|Monstruo,Gigante Soldado de Piedra|Monstruo,Calavera Invocada|Monstruo,Tributo Torrencial|Trampa,Destructor de Espadas|Monstruo,Guardián Celta|Monstruo,Poder Oscuro|Magia,Agujero Trampa|Trampa
+CampoMonstruos=Segador del Espíritu|DEF|NO_ATACO
+CampoTrampas=
+

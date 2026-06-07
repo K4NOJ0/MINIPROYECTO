@@ -1,0 +1,10 @@
+modelo.CartaMagica;Olla de la Codicia;robar
+modelo.CartaMagica;Polvo del Cosmos;robar
+modelo.CartaMagica;Escudo Místico;recuperar
+modelo.CartaMagica;Expansión Astral;recuperar
+modelo.CartaMagica;Renacer del Espíritu;recuperar
+modelo.CartaMagica;Universo Atómico;destruir
+modelo.CartaMagica;Lluvia de Relámpagos;destruir
+modelo.CartaMagica;Trampa de Araña;destruir
+modelo.CartaMagica;Terraformación;boost
+modelo.CartaMagica;Poder Oscuro;boost
