@@ -1,6 +1,6 @@
 package vista;
 
-import estadisticas.VistaEstadisticas;
+import vista.VistaEstadisticas;
 import javax.swing.*;
 import java.awt.*;
 

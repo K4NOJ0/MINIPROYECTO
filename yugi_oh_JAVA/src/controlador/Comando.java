@@ -1,4 +1,4 @@
-package patrones;
+package controlador;
 
 public interface Comando {
     void ejecutar();

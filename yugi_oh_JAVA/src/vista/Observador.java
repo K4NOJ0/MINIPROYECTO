@@ -1,4 +1,4 @@
-package patrones;
+package vista;
 
 public interface Observador {
     void actualizar();

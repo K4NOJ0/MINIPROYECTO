@@ -1,4 +1,4 @@
-package persistencia;
+package modelo;
 
 import modelo.Carta;
 

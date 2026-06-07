@@ -3,7 +3,7 @@ package modelo;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Stack;
-import excepciones.CampoLlenoException;
+import modelo.CampoLlenoException;
 
 
 public class Campo {

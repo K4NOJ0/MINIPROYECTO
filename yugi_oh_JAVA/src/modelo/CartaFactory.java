@@ -1,10 +1,10 @@
-package patrones;
+package modelo;
 
 import modelo.Carta;
 import modelo.Monstruo;
 import modelo.CartaMagica;
 import modelo.CartaTrampa;
-import reflection.InstanciadorDinamico;
+import modelo.InstanciadorDinamico;
 
 public class CartaFactory {
 

@@ -1,5 +1,6 @@
-package patrones;
+package modelo;
 
+import vista.Observador;
 import java.util.ArrayList;
 import java.util.List;
 
