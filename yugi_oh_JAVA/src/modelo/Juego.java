@@ -8,17 +8,25 @@ public class Juego {
     private Jugador jugadorActual;
     private int turnoActual;
 
-    private Queue<String>          colaEventos;
+    private Queue<String> colaEventos;
     private HashMap<String, Carta> registroCartas;
 
     public Juego() {
-        colaEventos    = new LinkedList<>();
+        colaEventos = new LinkedList<>();
         registroCartas = new HashMap<>();
     }
 
-    public void encolarEvento(String evento) { colaEventos.offer(evento); }
-    public String siguienteEvento()          { return colaEventos.poll(); }
-    public boolean hayEventosPendientes()    { return !colaEventos.isEmpty(); }
+    public void encolarEvento(String evento) {
+        colaEventos.offer(evento);
+    }
+
+    public String siguienteEvento() {
+        return colaEventos.poll();
+    }
+
+    public boolean hayEventosPendientes() {
+        return !colaEventos.isEmpty();
+    }
 
     public void registrarCarta(Carta carta) {
         registroCartas.put(carta.getNombre(), carta);
@@ -26,8 +34,9 @@ public class Juego {
 
     public Carta buscarCarta(String nombre) throws CartaInvalidaException {
         Carta c = registroCartas.get(nombre);
-        if (c == null) throw new CartaInvalidaException(
-            "La carta '" + nombre + "' no existe en el registro.");
+        if (c == null)
+            throw new CartaInvalidaException(
+                    "La carta '" + nombre + "' no existe en el registro ");
         return c;
     }
 
@@ -39,7 +48,8 @@ public class Juego {
         mazo.add(new CartaMagica("Curacion", "recuperar"));
         mazo.add(new CartaTrampa("Negar Ataque", "negar_ataque", "cuando_atacan"));
         mazo.add(new CartaTrampa("Fuerza Espejo", "fuerza_espejo", "cuando_atacan"));
-        for (Carta c : mazo) registrarCarta(c);
+        for (Carta c : mazo)
+            registrarCarta(c);
         return mazo;
     }
 
@@ -47,39 +57,39 @@ public class Juego {
         Collections.shuffle(mazo);
     }
 
-   public void repartirCartas(
-        Jugador j1,
-        Jugador j2,
-        ArrayList<Carta> mazo) {
+    public void repartirCartas(
+            Jugador j1,
+            Jugador j2,
+            ArrayList<Carta> mazo) {
 
-    ArrayList<Carta> mazoBarajado =
-            new ArrayList<>(mazo);
+        ArrayList<Carta> mazoBarajado = new ArrayList<>(mazo);
 
-    Collections.shuffle(mazoBarajado);
+        Collections.shuffle(mazoBarajado);
 
-    for (Carta c : mazoBarajado) {
-        registrarCarta(c);
+        for (Carta c : mazoBarajado) {
+            registrarCarta(c);
+        }
+
+        for (int i = 0; i < mazoBarajado.size(); i++) {
+
+            if (i % 2 == 0)
+                j1.getMazoStack().push(mazoBarajado.get(i));
+            else
+                j2.getMazoStack().push(mazoBarajado.get(i));
+        }
+
+        for (int i = 0; i < 5; i++) {
+            j1.robarCarta();
+            j2.robarCarta();
+        }
+
+        encolarEvento(
+                "Cartas repartidas. Cada jugador tiene 5 cartas ");
     }
 
-    for (int i = 0; i < mazoBarajado.size(); i++) {
-
-        if (i % 2 == 0)
-            j1.getMazoStack().push(mazoBarajado.get(i));
-        else
-            j2.getMazoStack().push(mazoBarajado.get(i));
-    }
-
-    for (int i = 0; i < 5; i++) {
-        j1.robarCarta();
-        j2.robarCarta();
-    }
-
-    encolarEvento(
-            "Cartas repartidas. Cada jugador tiene 5 cartas.");
-}
     public void iniciarJuego(Jugador j1, Jugador j2) {
         jugadorActual = j1;
-        turnoActual   = 1;
+        turnoActual = 1;
         ArrayList<Carta> mazo = construirMazo();
         repartirCartas(j1, j2, mazo);
         encolarEvento("¡El duelo comenzó! Turno de " + j1.getNombre());
@@ -122,14 +132,13 @@ public class Juego {
         return j1.getLp() <= 0 || j2.getLp() <= 0;
     }
 
-
     public String atacarMonstruo(Monstruo atacante, Monstruo defensor,
-                                  Jugador atacanteJugador, Jugador defensorJugador) {
+            Jugador atacanteJugador, Jugador defensorJugador) {
         StringBuilder log = new StringBuilder();
 
-        // Revisar trampas activas del defensor
         for (CartaTrampa t : new ArrayList<>(defensorJugador.getCampo().getZonaTrampas())) {
-            if (!t.isActiva()) continue;
+            if (!t.isActiva())
+                continue;
             switch (t.getIdEfecto()) {
                 case "negar_ataque":
                     defensorJugador.getCampo().getZonaTrampasLinked().remove(t);
@@ -163,12 +172,12 @@ public class Juego {
                 int diff = atacante.getAtk() - defensor.getAtk();
                 defensorJugador.getCampo().getZonaMonstruosLinked().remove(defensor);
                 defensorJugador.recibirDano(diff);
-                log.append(atacante.getNombre()).append(" destruyó a ").append(defensor.getNombre());
+                log.append(atacante.getNombre()).append(" destruyo a ").append(defensor.getNombre());
             } else if (atacante.getAtk() < defensor.getAtk()) {
                 int diff = defensor.getAtk() - atacante.getAtk();
                 atacanteJugador.getCampo().getZonaMonstruosLinked().remove(atacante);
                 atacanteJugador.recibirDano(diff);
-                log.append(defensor.getNombre()).append(" destruyó a ").append(atacante.getNombre());
+                log.append(defensor.getNombre()).append(" destruyo a ").append(atacante.getNombre());
             } else {
                 defensorJugador.getCampo().getZonaMonstruosLinked().remove(defensor);
                 atacanteJugador.getCampo().getZonaMonstruosLinked().remove(atacante);
@@ -196,7 +205,7 @@ public class Juego {
     public String aplicarEfectoMagica(CartaMagica carta, Jugador jugador, Jugador rival) {
         String resultado = carta.activarEfecto(jugador, rival);
         jugador.getManoLinked().remove(carta);
-        encolarEvento(jugador.getNombre() + " activó " + carta.getNombre() + ": " + resultado);
+        encolarEvento(jugador.getNombre() + " activo " + carta.getNombre() + ": " + resultado);
         return resultado;
     }
 
@@ -216,6 +225,11 @@ public class Juego {
         return msg;
     }
 
-    public HashMap<String, Carta> getRegistroCartas() { return registroCartas; }
-    public Queue<String>          getColaEventos()    { return colaEventos; }
+    public HashMap<String, Carta> getRegistroCartas() {
+        return registroCartas;
+    }
+
+    public Queue<String> getColaEventos() {
+        return colaEventos;
+    }
 }

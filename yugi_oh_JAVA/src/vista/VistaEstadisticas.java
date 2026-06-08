@@ -12,12 +12,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-
 public class VistaEstadisticas extends JFrame {
 
-    private static final Color BG_DARK  = new Color(8, 18, 8);
-    private static final Color GOLD     = new Color(212, 175, 55);
-    private static final Color GREEN    = new Color(50, 180, 50);
+    private static final Color BG_DARK = new Color(8, 18, 8);
+    private static final Color GOLD = new Color(212, 175, 55);
+    private static final Color GREEN = new Color(50, 180, 50);
     private static final Color FG_WHITE = Color.WHITE;
 
     private final AnalizadorEstadisticas analizador;
@@ -40,9 +39,9 @@ public class VistaEstadisticas extends JFrame {
         root.setBackground(BG_DARK);
         root.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
 
-        root.add(crearPanelTitulo(),   BorderLayout.NORTH);
-        root.add(crearPanelCentral(),  BorderLayout.CENTER);
-        root.add(crearPanelResumen(),  BorderLayout.SOUTH);
+        root.add(crearPanelTitulo(), BorderLayout.NORTH);
+        root.add(crearPanelCentral(), BorderLayout.CENTER);
+        root.add(crearPanelResumen(), BorderLayout.SOUTH);
 
         setContentPane(root);
     }
@@ -51,7 +50,7 @@ public class VistaEstadisticas extends JFrame {
         JPanel p = new JPanel(new FlowLayout(FlowLayout.CENTER));
         p.setOpaque(false);
 
-        JLabel titulo = new JLabel("★  ESTADÍSTICAS DEL DUELO  ★");
+        JLabel titulo = new JLabel("  ESTADÍSTICAS DEL DUELO  ");
         titulo.setFont(new Font("Serif", Font.BOLD, 26));
         titulo.setForeground(GOLD);
         p.add(titulo);
@@ -64,16 +63,19 @@ public class VistaEstadisticas extends JFrame {
 
         String[] columnas = { "#", "Fecha", "Ganador", "LP Finales" };
         DefaultTableModel modelo = new DefaultTableModel(columnas, 0) {
-            @Override public boolean isCellEditable(int r, int c) { return false; }
+            @Override
+            public boolean isCellEditable(int r, int c) {
+                return false;
+            }
         };
 
         List<RegistroPartida> partidas = analizador.getPartidas();
         if (partidas.isEmpty()) {
-            modelo.addRow(new Object[]{ "—", "Sin datos", "—", "—" });
+            modelo.addRow(new Object[] { "—", "Sin datos", "—", "—" });
         } else {
             int i = 1;
             for (RegistroPartida rp : partidas) {
-                modelo.addRow(new Object[]{ i++, rp.getFecha(), rp.getGanador(), rp.getLpFinal() + " LP" });
+                modelo.addRow(new Object[] { i++, rp.getFecha(), rp.getGanador(), rp.getLpFinal() + " LP" });
             }
         }
 
@@ -82,11 +84,10 @@ public class VistaEstadisticas extends JFrame {
 
         JScrollPane scroll = new JScrollPane(tablaHistorial);
         scroll.setBorder(BorderFactory.createTitledBorder(
-            BorderFactory.createLineBorder(GREEN, 1),
-            " Historial de partidas ",
-            TitledBorder.LEFT, TitledBorder.TOP,
-            new Font("Serif", Font.BOLD, 13), GREEN
-        ));
+                BorderFactory.createLineBorder(GREEN, 1),
+                " Historial de partidas ",
+                TitledBorder.LEFT, TitledBorder.TOP,
+                new Font("Serif", Font.BOLD, 13), GREEN));
         scroll.setBackground(BG_DARK);
         scroll.getViewport().setBackground(new Color(12, 28, 12));
 
@@ -104,17 +105,19 @@ public class VistaEstadisticas extends JFrame {
 
         String[] cols = { "Jugador", "Victorias" };
         DefaultTableModel modelo = new DefaultTableModel(cols, 0) {
-            @Override public boolean isCellEditable(int r, int c) { return false; }
+            @Override
+            public boolean isCellEditable(int r, int c) {
+                return false;
+            }
         };
 
         HashMap<String, Integer> victorias = analizador.getVictoriasPorJugador();
         if (victorias.isEmpty()) {
-            modelo.addRow(new Object[]{ "Sin datos", 0 });
+            modelo.addRow(new Object[] { "Sin datos", 0 });
         } else {
-            // Ordenar por victorias descendente
             victorias.entrySet().stream()
-                .sorted(Map.Entry.<String, Integer>comparingByValue().reversed())
-                .forEach(e -> modelo.addRow(new Object[]{ e.getKey(), e.getValue() }));
+                    .sorted(Map.Entry.<String, Integer>comparingByValue().reversed())
+                    .forEach(e -> modelo.addRow(new Object[] { e.getKey(), e.getValue() }));
         }
 
         JTable tablaVictorias = new JTable(modelo);
@@ -122,18 +125,16 @@ public class VistaEstadisticas extends JFrame {
 
         JScrollPane scroll = new JScrollPane(tablaVictorias);
         scroll.setBorder(BorderFactory.createTitledBorder(
-            BorderFactory.createLineBorder(GOLD, 1),
-            " Victorias por jugador ",
-            TitledBorder.LEFT, TitledBorder.TOP,
-            new Font("Serif", Font.BOLD, 12), GOLD
-        ));
+                BorderFactory.createLineBorder(GOLD, 1),
+                " Victorias por jugador ",
+                TitledBorder.LEFT, TitledBorder.TOP,
+                new Font("Serif", Font.BOLD, 12), GOLD));
         scroll.setBackground(BG_DARK);
         scroll.getViewport().setBackground(new Color(20, 18, 5));
 
         p.add(scroll, BorderLayout.CENTER);
         return p;
     }
-
 
     private JPanel crearPanelResumen() {
         JPanel p = new JPanel(new GridLayout(1, 3, 10, 0));
@@ -146,8 +147,8 @@ public class VistaEstadisticas extends JFrame {
 
         RegistroPartida mejorPartida = analizador.partidaConMasLP();
         String mejorLP = (mejorPartida != null)
-            ? mejorPartida.getGanador() + " (" + mejorPartida.getLpFinal() + " LP)"
-            : "Sin datos";
+                ? mejorPartida.getGanador() + " (" + mejorPartida.getLpFinal() + " LP)"
+                : "Sin datos";
 
         p.add(crearTarjetaResumen("Total de partidas", String.valueOf(total), GREEN));
         p.add(crearTarjetaResumen("Más victorias", masVictorias, GOLD));
@@ -160,9 +161,8 @@ public class VistaEstadisticas extends JFrame {
         JPanel card = new JPanel(new GridLayout(2, 1));
         card.setBackground(new Color(15, 30, 15));
         card.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(color, 1),
-            BorderFactory.createEmptyBorder(5, 10, 5, 10)
-        ));
+                BorderFactory.createLineBorder(color, 1),
+                BorderFactory.createEmptyBorder(5, 10, 5, 10)));
 
         JLabel lblEtiqueta = new JLabel(etiqueta, JLabel.CENTER);
         lblEtiqueta.setFont(new Font("Serif", Font.PLAIN, 11));
@@ -176,7 +176,6 @@ public class VistaEstadisticas extends JFrame {
         card.add(lblValor);
         return card;
     }
-
 
     private void estilizarTabla(JTable tabla) {
         tabla.setBackground(new Color(12, 28, 12));

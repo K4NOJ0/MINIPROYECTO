@@ -14,16 +14,18 @@ Contiene toda la lógica principal, las reglas del juego y la definición de los
 - **`Jugador.java`**: Representa a un jugador, controlando sus puntos de vida (LP), su mano, su mazo y su cementerio.
 - **`Carta.java`, `Monstruo.java`, `CartaMagica.java`, `CartaTrampa.java`**: Clases que representan los diferentes tipos de cartas del juego, con sus atributos (ataque, defensa, tipo, efectos).
 - **`Activar.java`**: Interfaz para la activación de efectos de cartas mágicas y de trampa.
+- **`GestorArchivos.java`**: Administra la persistencia del juego. Maneja el archivo de historial `resultados.txt` y almacena los 3 estados de juego guardados en un único archivo estructurado `partidas.txt`.
+- **`PartidaSerializer.java`**: Serializa y deserializa el estado de la partida (`EstadoPartida`), preservando cartas y sus estadísticas completas (ATK, DEF, Nivel) de la mano, mazo y campo.
 
 ### Paquete `vista`
 Se encarga de la Interfaz Gráfica de Usuario (GUI). Define lo que el usuario ve en la pantalla usando componentes de `javax.swing`.
 - **`MenuInicial.java`**: La pantalla de inicio del juego, donde se puede comenzar una nueva partida.
-- **`TableroJuego.java`**: La interfaz principal donde se lleva a cabo el duelo. Muestra las zonas de monstruos, magias/trampas, puntos de vida, mano y cementerio.
+- **`TableroJuego.java`**: La interfaz principal donde se lleva a cabo el duelo. Permite guardar y cargar partidas seleccionando entre tres posiciones de guardado ("Guardado 1", "Guardado 2", "Guardado 3").
 - **`CartaPanel.java`**: Un componente visual personalizado para representar una carta individual en la interfaz.
 
 ### Paquete `controlador`
 Actúa como puente entre la `vista` y el `modelo`. 
-- **`ControladorJuego.java`**: Recibe las interacciones del usuario (clics en botones, selección de cartas) desde la vista, actualiza los datos en el modelo según las reglas del juego y, por último, actualiza la vista para reflejar los cambios realizados.
+- **`ControladorJuego.java`**: Recibe las interacciones de la interfaz, gestiona la persistencia a través de slots delegados, y mantiene sincronizados el estado lógico de los jugadores y la representación en pantalla.
 
 ##  Cómo usar y ejecutar el proyecto
 
@@ -39,24 +41,25 @@ La forma más sencilla de ejecutar el proyecto es utilizando un Entorno de Desar
 
 ### Opción 2: Desde la Terminal (Línea de Comandos)
 Si prefieres usar la terminal, asegúrate de tener el **JDK** (Java Development Kit) instalado.
-1. Abre una terminal y navega hasta la carpeta `src` del proyecto:
+1. Abre una terminal y navega hasta la carpeta raíz del proyecto (`yugi_oh_JAVA`):
    ```bash
-   cd ruta/al/proyecto/yugi_oh_JAVA/src
+   cd ruta/al/proyecto/yugi_oh_JAVA
    ```
-2. Compila todos los archivos `.java`:
+2. Compila todos los archivos `.java` (por ejemplo, compilando al directorio de clases correspondiente):
    ```bash
-   javac App.java modelo/*.java vista/*.java controlador/*.java
+   javac -d . src/App.java src/modelo/*.java src/vista/*.java src/controlador/*.java
    ```
 3. Ejecuta la clase principal:
    ```bash
    java App
    ```
 
-## Cómo Jugar
-- Al ejecutar la aplicación, verás el **Menú Inicial**.
-- Inicia el juego para abrir el **Tablero de Juego**.
-- Interactúa con el tablero usando el ratón. El controlador se encargará de validar tus acciones, como invocar monstruos, activar magias o atacar al oponente de acuerdo con las reglas implementadas.
+## Guardado y Carga de Partidas
+El juego incluye un sistema integrado para persistir el estado actual del duelo:
+- **Guardado Unificado**: Se ofrecen 3 perfiles denominados **"Guardado 1"**, **"Guardado 2"** y **"Guardado 3"**. Todos ellos se registran de manera organizada en un único archivo local llamado `partidas.txt`.
+- **Integridad de Estadísticas**: Al cargar una partida, los monstruos y cartas del campo, mano y mazo mantienen intactas sus estadísticas originales de ataque (ATK), defensa (DEF), nivel, modos de juego y efectos, evitando que se reinicien en cero.
 
+---
 
 John Freddy Hurtado 2559863-3743
 

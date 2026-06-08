@@ -36,98 +36,45 @@ public class EstadoPartida {
         private final ArrayList<String> campoTrampas;
 
         public EstadoJugador(Jugador j) {
-
             this.nombre = j.getNombre();
             this.lp = j.getLp();
 
             this.mano = new ArrayList<>();
+            for (Carta c : j.getMano()) mano.add(serializarCarta(c));
+            
             this.mazo = new ArrayList<>();
+            for (Carta c : j.getMazo()) mazo.add(serializarCarta(c));
+            
             this.campoMonstruos = new ArrayList<>();
-            this.campoTrampas = new ArrayList<>();
-
-            // MANO
-            for (Carta c : j.getMano()) {
-
-                if (c instanceof Monstruo m) {
-
-                    mano.add(
-                        m.getNombre() + "|" +
-                        m.getAtk() + "|" +
-                        m.getDef() + "|" +
-                        m.getNivel() + "|" +
-                        "Monstruo"
-                    );
-
-                } else {
-
-                    mano.add(c.getNombre() + "|" + c.getTipo());
-                }
-            }
-
-            // MAZO
-            for (Carta c : j.getMazo()) {
-
-                if (c instanceof Monstruo m) {
-
-                    mazo.add(
-                        m.getNombre() + "|" +
-                        m.getAtk() + "|" +
-                        m.getDef() + "|" +
-                        m.getNivel() + "|" +
-                        "Monstruo"
-                    );
-
-                } else {
-
-                    mazo.add(c.getNombre() + "|" + c.getTipo());
-                }
-            }
-
-            // CAMPO MONSTRUOS
             for (Monstruo m : j.getCampo().getZonaMonstruos()) {
-
-                campoMonstruos.add(
-                    m.getNombre() + "|" +
-                    m.getAtk() + "|" +
-                    m.getDef() + "|" +
-                    m.getNivel() + "|" +
-                    (m.isEnModoAtaque() ? "ATK" : "DEF") + "|" +
-                    (m.isYaAtaco() ? "ATACO" : "NO_ATACO")
-                );
+                campoMonstruos.add(m.getNombre() + "|" + (m.isEnModoAtaque() ? "ATK" : "DEF") + "|" + (m.isYaAtaco() ? "ATACO" : "NO_ATACO") + "|" + m.getAtk() + "|" + m.getDef() + "|" + m.getNivel());
             }
-
-            // CAMPO TRAMPAS
+            
+            this.campoTrampas = new ArrayList<>();
             for (CartaTrampa t : j.getCampo().getZonaTrampas()) {
-
-                campoTrampas.add(
-                    t.getNombre() + "|" +
-                    (t.isActiva() ? "ACTIVA" : "OCULTA")
-                );
+                campoTrampas.add(t.getNombre() + "|" + (t.isActiva() ? "ACTIVA" : "OCULTA") + "|" + t.getEfecto() + "|" + t.getCondicion());
             }
         }
 
-        public String getNombre() {
-            return nombre;
+        private String serializarCarta(Carta c) {
+            if (c instanceof Monstruo) {
+                Monstruo m = (Monstruo) c;
+                return m.getNombre() + "|Monstruo|" + m.getAtk() + "|" + m.getDef() + "|" + m.getNivel();
+            } else if (c instanceof CartaMagica) {
+                CartaMagica cm = (CartaMagica) c;
+                return cm.getNombre() + "|Magia|" + cm.getEfecto();
+            } else if (c instanceof CartaTrampa) {
+                CartaTrampa ct = (CartaTrampa) c;
+                return ct.getNombre() + "|Trampa|" + ct.getEfecto() + "|" + ct.getCondicion();
+            }
+            return c.getNombre() + "|" + c.getTipo();
         }
 
-        public int getLp() {
-            return lp;
-        }
-
-        public ArrayList<String> getMano() {
-            return mano;
-        }
-
-        public ArrayList<String> getMazo() {
-            return mazo;
-        }
-
-        public ArrayList<String> getCampoMonstruos() {
-            return campoMonstruos;
-        }
-
-        public ArrayList<String> getCampoTrampas() {
-            return campoTrampas;
-        }
+        public String getNombre() { return nombre; }
+        public int getLp() { return lp; }
+        public ArrayList<String> getMano() { return mano; }
+        public ArrayList<String> getMazo() { return mazo; }
+        public ArrayList<String> getCampoMonstruos() { return campoMonstruos; }
+        public ArrayList<String> getCampoTrampas() { return campoTrampas; }
     }
 }

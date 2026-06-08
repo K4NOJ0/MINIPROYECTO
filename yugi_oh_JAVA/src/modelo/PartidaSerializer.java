@@ -1,29 +1,14 @@
 package modelo;
 
 import modelo.*;
+import java.lang.reflect.Constructor;
 import modelo.EstadoPartida;
 import modelo.EstadoPartida.EstadoJugador;
-
+import java.util.List;
 import java.util.ArrayList;
 
-/**
- * Convierte un EstadoPartida a texto y lo reconstruye desde texto.
- *
- * Formato del archivo:
- *   [PARTIDA]
- *   TurnoActual=NOMBRE
- *
- *   [JUGADOR1]
- *   Nombre=X
- *   LP=8000
- *   Mano=CartaA|Monstruo,CartaB|Magia,...
- *   Mazo=CartaC|Trampa,...
- *   CampoMonstruos=Dragon|ATK|NO_ATACO,...
- *   CampoTrampas=Agujero|OCULTA,...
- */
 public class PartidaSerializer {
 
-    // ── Serializar (Estado → texto) ───────────────────────────────────────────
     public static String serializar(EstadoPartida estado) {
         StringBuilder sb = new StringBuilder();
         sb.append("[PARTIDA]\n");
@@ -45,25 +30,21 @@ public class PartidaSerializer {
         return sb.toString();
     }
 
-    // ── Deserializar (texto → DatosPartida) ───────────────────────────────────
-    /**
-     * Lee el texto guardado y reconstruye los datos necesarios para
-     * reiniciar la partida desde ese punto.
-     */
     public static DatosPartida deserializar(String contenido) {
-        if (contenido == null || contenido.isBlank()) return null;
-
+        if (contenido == null || contenido.isBlank())
+            return null;
         String[] lineas = contenido.split("\n");
         DatosPartida datos = new DatosPartida();
-
-        int seccion = 0; // 0=cabecera, 1=jugador1, 2=jugador2
+        int seccion = 0;
         DatosJugador jugActual = null;
-
         for (String linea : lineas) {
             linea = linea.trim();
-            if (linea.isEmpty()) continue;
-
-            if (linea.equals("[PARTIDA]")) { seccion = 0; continue; }
+            if (linea.isEmpty())
+                continue;
+            if (linea.equals("[PARTIDA]")) {
+                seccion = 0;
+                continue;
+            }
             if (linea.equals("[JUGADOR1]")) {
                 seccion = 1;
                 datos.j1 = new DatosJugador();
@@ -76,110 +57,143 @@ public class PartidaSerializer {
                 jugActual = datos.j2;
                 continue;
             }
-
             String[] partes = linea.split("=", 2);
-            if (partes.length < 2) continue;
+            if (partes.length < 2)
+                continue;
             String clave = partes[0].trim();
             String valor = partes[1].trim();
-
             if (seccion == 0) {
-                if (clave.equals("TurnoActual")) datos.nombreTurnoActual = valor;
+                if (clave.equals("TurnoActual"))
+                    datos.nombreTurnoActual = valor;
             } else if (jugActual != null) {
                 switch (clave) {
-                    case "Nombre":        jugActual.nombre = valor; break;
-                    case "LP":            jugActual.lp = Integer.parseInt(valor); break;
-                    case "Mano":          jugActual.mano = parsearCartas(valor); break;
-                    case "Mazo":          jugActual.mazo = parsearCartas(valor); break;
-                    case "CampoMonstruos":jugActual.campoMonstruos = parsearMonstruos(valor); break;
-                    case "CampoTrampas":  jugActual.campoTrampas = parsearTrampas(valor); break;
+                    case "Nombre":
+                        jugActual.nombre = valor;
+                        break;
+                    case "LP":
+                        jugActual.lp = Integer.parseInt(valor);
+                        break;
+                    case "Mano":
+                        jugActual.mano = parsearCartas(valor);
+                        break;
+                    case "Mazo":
+                        jugActual.mazo = parsearCartas(valor);
+                        break;
+                    case "CampoMonstruos":
+                        jugActual.campoMonstruos = parsearMonstruos(valor);
+                        break;
+                    case "CampoTrampas":
+                        jugActual.campoTrampas = parsearTrampas(valor);
+                        break;
                 }
             }
         }
         return datos;
     }
 
-    // ── Parsers de cada tipo de carta ─────────────────────────────────────────
+    private static String serializeCarta(Carta carta) {
+        String className = carta.getClass().getName();
+        if (carta instanceof Monstruo) {
+            Monstruo m = (Monstruo) carta;
+            return className + ";" + m.getNombre() + ";" + m.getAtk() + ";" + m.getDef() + ";" + m.getNivel();
+        } else if (carta instanceof CartaMagica) {
+            CartaMagica cm = (CartaMagica) carta;
+            return className + ";" + cm.getNombre() + ";" + cm.getEfecto();
+        } else if (carta instanceof CartaTrampa) {
+            CartaTrampa ct = (CartaTrampa) carta;
+            return className + ";" + ct.getNombre() + ";" + ct.getEfecto() + ";" + ct.getCondicion();
+        } else {
+            return className + ";" + carta.getNombre();
+        }
+    }
 
     private static ArrayList<Carta> parsearCartas(String valor) {
         ArrayList<Carta> lista = new ArrayList<>();
-        if (valor.isBlank()) return lista;
+        if (valor.isBlank())
+            return lista;
         for (String entrada : valor.split(",")) {
             entrada = entrada.trim();
-            if (entrada.isEmpty()) continue;
+            if (entrada.isEmpty())
+                continue;
             String[] partes = entrada.split("\\|");
-            if (partes.length < 2) continue;
+            if (partes.length < 2)
+                continue;
             String nombre = partes[0];
-            String tipo   = partes[1];
-            switch (tipo) {
-                case "Monstruo": lista.add(new Monstruo(nombre, 0, 0, 1)); break;
-                case "Magia":    lista.add(new CartaMagica(nombre, "desconocido")); break;
-                case "Trampa":   lista.add(new CartaTrampa(nombre, "desconocido", "desconocido")); break;
+            String tipo = partes[1];
+            Carta carta;
+            if (tipo.equalsIgnoreCase("Monstruo")) {
+                int atk = partes.length > 2 ? Integer.parseInt(partes[2]) : 0;
+                int def = partes.length > 3 ? Integer.parseInt(partes[3]) : 0;
+                int nivel = partes.length > 4 ? Integer.parseInt(partes[4]) : 1;
+                carta = new Monstruo(nombre, atk, def, nivel);
+            } else if (tipo.equalsIgnoreCase("Magia") || tipo.equalsIgnoreCase("CartaMagica")) {
+                String efecto = partes.length > 2 ? partes[2] : "desconocido";
+                carta = new CartaMagica(nombre, efecto);
+            } else if (tipo.equalsIgnoreCase("Trampa") || tipo.equalsIgnoreCase("CartaTrampa")) {
+                String efecto = partes.length > 2 ? partes[2] : "desconocido";
+                String condicion = partes.length > 3 ? partes[3] : "desconocido";
+                carta = new CartaTrampa(nombre, efecto, condicion);
+            } else {
+                carta = new Monstruo(nombre, 0, 0, 1);
             }
+            lista.add(carta);
         }
         return lista;
     }
 
-   private static ArrayList<Monstruo> parsearMonstruos(String valor) {
-
-    ArrayList<Monstruo> lista = new ArrayList<>();
-
-    if (valor.isBlank()) return lista;
-
-    for (String entrada : valor.split(",")) {
-
-        entrada = entrada.trim();
-
-        if (entrada.isEmpty()) continue;
-
-        String[] partes = entrada.split("\\|");
-
-        if (partes.length < 6) continue;
-
-        String nombre = partes[0];
-        int atk       = Integer.parseInt(partes[1]);
-        int def       = Integer.parseInt(partes[2]);
-        int nivel     = Integer.parseInt(partes[3]);
-
-        Monstruo m = new Monstruo(nombre, atk, def, nivel);
-
-        m.setEnModoAtaque(partes[4].equals("ATK"));
-        m.setYaAtaco(partes[5].equals("ATACO"));
-
-        lista.add(m);
+    private static ArrayList<Monstruo> parsearMonstruos(String valor) {
+        ArrayList<Monstruo> lista = new ArrayList<>();
+        if (valor.isBlank())
+            return lista;
+        for (String entrada : valor.split(",")) {
+            entrada = entrada.trim();
+            if (entrada.isEmpty())
+                continue;
+            String[] partes = entrada.split("\\|");
+            if (partes.length < 3)
+                continue;
+            int atk = partes.length > 3 ? Integer.parseInt(partes[3]) : 0;
+            int def = partes.length > 4 ? Integer.parseInt(partes[4]) : 0;
+            int nivel = partes.length > 5 ? Integer.parseInt(partes[5]) : 1;
+            Monstruo m = new Monstruo(partes[0], atk, def, nivel);
+            m.setEnModoAtaque(partes[1].equals("ATK"));
+            m.setYaAtaco(partes[2].equals("ATACO"));
+            lista.add(m);
+        }
+        return lista;
     }
-
-    return lista;
-}
 
     private static ArrayList<CartaTrampa> parsearTrampas(String valor) {
         ArrayList<CartaTrampa> lista = new ArrayList<>();
-        if (valor.isBlank()) return lista;
+        if (valor.isBlank())
+            return lista;
         for (String entrada : valor.split(",")) {
             entrada = entrada.trim();
-            if (entrada.isEmpty()) continue;
-            // formato: nombre|ACTIVA  o  nombre|OCULTA
+            if (entrada.isEmpty())
+                continue;
             String[] partes = entrada.split("\\|");
-            if (partes.length < 2) continue;
-            CartaTrampa t = new CartaTrampa(partes[0], "desconocido", "desconocido");
+            if (partes.length < 2)
+                continue;
+            String efecto = partes.length > 2 ? partes[2] : "desconocido";
+            String condicion = partes.length > 3 ? partes[3] : "desconocido";
+            CartaTrampa t = new CartaTrampa(partes[0], efecto, condicion);
             t.setActiva(partes[1].equals("ACTIVA"));
             lista.add(t);
         }
         return lista;
     }
 
-    // ── Clases de datos reconstruidos ─────────────────────────────────────────
-
     public static class DatosPartida {
-        public String       nombreTurnoActual;
+        public String nombreTurnoActual;
         public DatosJugador j1;
         public DatosJugador j2;
     }
 
     public static class DatosJugador {
-        public String              nombre;
-        public int                 lp;
-        public ArrayList<Carta>    mano          = new ArrayList<>();
-        public ArrayList<Carta>    mazo          = new ArrayList<>();
+        public String nombre;
+        public int lp;
+        public ArrayList<Carta> mano = new ArrayList<>();
+        public ArrayList<Carta> mazo = new ArrayList<>();
         public ArrayList<Monstruo> campoMonstruos = new ArrayList<>();
         public ArrayList<CartaTrampa> campoTrampas = new ArrayList<>();
     }
