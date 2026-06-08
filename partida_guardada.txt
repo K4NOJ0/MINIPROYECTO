@@ -1,19 +1,19 @@
 [PARTIDA]
-TurnoActual=CUERVO_EL_MEJOR
+TurnoActual=MANOLO
 
 [JUGADOR1]
-Nombre=CUERVO_EL_MEJOR
+Nombre=MANOLO
 LP=8000
-Mano=Polvo del Cosmos|Magia,Dragón Blanco de Ojos Azules|Monstruo,Negar Ataque|Trampa,Trampa de Araña|Magia,Escudo Místico|Magia,Bruja del Bosque Negro|Monstruo
-Mazo=Kuriboh|Monstruo,Dragón Bebé|Monstruo,Protección Waboku|Trampa,Dama Arpía|Monstruo,Universo Atómico|Magia,Tornado de Polvo|Trampa,Mago del Tiempo|Monstruo,Dragón Negro de Ojos Rojos|Monstruo,Hada de Inyección Lily|Monstruo,Cilindro Mágico|Trampa,Olla de la Codicia|Magia,Mago Oscuro|Monstruo,Neo el Espadachín Mágico|Monstruo,Expansión Astral|Magia,Insecto Comehombres|Monstruo,Hermanas Arpía|Monstruo,Aqua Madoor|Monstruo,Evacuación Forzada|Trampa
-CampoMonstruos=Buey de Batalla|ATK|NO_ATACO
+Mano=Blindaje Sakuretsu|Trampa,Evacuación Forzada|Trampa,Sangan|1000|600|3|Monstruo,Poder Oscuro|Magia,Dragón Blanco de Ojos Azules|3000|2500|8|Monstruo
+Mazo=Jinzo|2400|1500|6|Monstruo,Dragón Negro de Ojos Rojos|2400|2000|7|Monstruo,Universo Atómico|Magia,Protección Waboku|Trampa,Elfa Mística|800|2000|4|Monstruo,Soldado Archidemonio|1900|1500|4|Monstruo,Lluvia de Relámpagos|Magia,Tornado de Polvo|Trampa,Fuerza Exiliada|1000|1000|4|Monstruo,Insecto Comehombres|450|600|2|Monstruo,Negar Ataque|Trampa,Tributo Torrencial|Trampa,Elfa Géminis|1900|900|4|Monstruo,Aqua Madoor|1200|2000|4|Monstruo,Mago del Tiempo|500|400|2|Monstruo,Hermanas Arpía|1950|2100|6|Monstruo,Gearfried el Caballero de Hierro|1800|1600|4|Monstruo,Terraformación|Magia,Dragón Bebé|1200|700|3|Monstruo
+CampoMonstruos=Neo el Espadachín Mágico|1700|1000|4|DEF|NO_ATACO
 CampoTrampas=
 
 [JUGADOR2]
-Nombre=CEBOLLAS
+Nombre=SHINRA
 LP=8000
-Mano=Chica Maga Oscura|Monstruo,Elfa Mística|Monstruo,Terraformación|Magia,Muro de Ilusión|Monstruo,Renacer del Espíritu|Magia,Sangan|Monstruo
-Mazo=Fuerza Espejo|Trampa,Gearfried el Caballero de Hierro|Monstruo,Jinzo|Monstruo,Soldado Archidemonio|Monstruo,Blindaje Sakuretsu|Trampa,Fuerza Exiliada|Monstruo,Lluvia de Relámpagos|Magia,Vorcerader|Monstruo,Agujero Trampa Sin Fondo|Trampa,La Jinn|Monstruo,Elfa Géminis|Monstruo,Gigante Soldado de Piedra|Monstruo,Calavera Invocada|Monstruo,Tributo Torrencial|Trampa,Destructor de Espadas|Monstruo,Guardián Celta|Monstruo,Poder Oscuro|Magia,Agujero Trampa|Trampa
-CampoMonstruos=Segador del Espíritu|DEF|NO_ATACO
+Mano=Segador del Espíritu|300|200|3|Monstruo,Mago Oscuro|2500|2100|7|Monstruo,Gigante Soldado de Piedra|1300|2000|3|Monstruo,Guardián Celta|1400|1200|4|Monstruo,Fuerza Espejo|Trampa
+Mazo=La Jinn|1800|1000|4|Monstruo,Vorcerader|1900|1200|4|Monstruo,Bruja del Bosque Negro|1100|1200|4|Monstruo,Kuriboh|300|200|1|Monstruo,Polvo del Cosmos|Magia,Agujero Trampa|Trampa,Destructor de Espadas|2600|2300|7|Monstruo,Cilindro Mágico|Trampa,Chica Maga Oscura|2000|1700|6|Monstruo,Muro de Ilusión|1000|1850|4|Monstruo,Renacer del Espíritu|Magia,Olla de la Codicia|Magia,Dama Arpía|1300|1400|4|Monstruo,Escudo Místico|Magia,Trampa de Araña|Magia,Calavera Invocada|2500|1200|6|Monstruo,Agujero Trampa Sin Fondo|Trampa,Expansión Astral|Magia,Hada de Inyección Lily|400|1500|3|Monstruo
+CampoMonstruos=Buey de Batalla|1700|1000|4|ATK|NO_ATACO
 CampoTrampas=
 

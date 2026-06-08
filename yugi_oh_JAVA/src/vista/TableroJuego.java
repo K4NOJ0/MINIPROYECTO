@@ -276,13 +276,21 @@ public class TableroJuego extends JFrame {
 
     // ── Métodos públicos de actualización visual ──────────────────────────────
 
-    public void actualizarHUD(int lpJ1, int lpJ2, int mazoJ1, int mazoJ2, String turnoNombre) {
-        lblLpJ1.setText("❤ " + nombreJ1 + ": " + lpJ1 + " LP");
-        lblLpJ2.setText("❤ " + nombreJ2 + ": " + lpJ2 + " LP");
-        lblMazoJ1.setText("🂠 Mazo " + nombreJ1 + ": " + mazoJ1);
-        lblMazoJ2.setText("🂠 Mazo " + nombreJ2 + ": " + mazoJ2);
-        lblTurno.setText("TURNO: " + turnoNombre.toUpperCase());
-    }
+public void actualizarHUD(
+    String nombreJ1,
+    String nombreJ2,
+    int lpJ1,
+    int lpJ2,
+    int mazoJ1,
+    int mazoJ2,
+    String turnoNombre) {
+
+    lblLpJ1.setText("❤ " + nombreJ1 + ": " + lpJ1 + " LP");
+    lblLpJ2.setText("❤ " + nombreJ2 + ": " + lpJ2 + " LP");
+    lblMazoJ1.setText("🂠 Mazo " + nombreJ1 + ": " + mazoJ1);
+    lblMazoJ2.setText("🂠 Mazo " + nombreJ2 + ": " + mazoJ2);
+    lblTurno.setText("TURNO: " + turnoNombre.toUpperCase());
+}
 
     public void actualizarMano(ArrayList<Carta> mano) {
         JPanel cartas = getCartasPanel(panelManoJugador);

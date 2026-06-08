@@ -13,6 +13,7 @@ public class Monstruo extends Carta {
         this.nivel = nivel;
         this.modoAtaque = true;
         this.yaAtaco = false;
+        
     }
 
     public int getAtk() { return atk; }

@@ -119,22 +119,37 @@ public class PartidaSerializer {
         return lista;
     }
 
-    private static ArrayList<Monstruo> parsearMonstruos(String valor) {
-        ArrayList<Monstruo> lista = new ArrayList<>();
-        if (valor.isBlank()) return lista;
-        for (String entrada : valor.split(",")) {
-            entrada = entrada.trim();
-            if (entrada.isEmpty()) continue;
-            // formato: nombre|ATK|ATACO  o  nombre|DEF|NO_ATACO
-            String[] partes = entrada.split("\\|");
-            if (partes.length < 3) continue;
-            Monstruo m = new Monstruo(partes[0], 0, 0, 1);
-            m.setEnModoAtaque(partes[1].equals("ATK"));
-            m.setYaAtaco(partes[2].equals("ATACO"));
-            lista.add(m);
-        }
-        return lista;
+   private static ArrayList<Monstruo> parsearMonstruos(String valor) {
+
+    ArrayList<Monstruo> lista = new ArrayList<>();
+
+    if (valor.isBlank()) return lista;
+
+    for (String entrada : valor.split(",")) {
+
+        entrada = entrada.trim();
+
+        if (entrada.isEmpty()) continue;
+
+        String[] partes = entrada.split("\\|");
+
+        if (partes.length < 6) continue;
+
+        String nombre = partes[0];
+        int atk       = Integer.parseInt(partes[1]);
+        int def       = Integer.parseInt(partes[2]);
+        int nivel     = Integer.parseInt(partes[3]);
+
+        Monstruo m = new Monstruo(nombre, atk, def, nivel);
+
+        m.setEnModoAtaque(partes[4].equals("ATK"));
+        m.setYaAtaco(partes[5].equals("ATACO"));
+
+        lista.add(m);
     }
+
+    return lista;
+}
 
     private static ArrayList<CartaTrampa> parsearTrampas(String valor) {
         ArrayList<CartaTrampa> lista = new ArrayList<>();
