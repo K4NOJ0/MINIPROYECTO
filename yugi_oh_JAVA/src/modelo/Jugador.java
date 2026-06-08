@@ -25,6 +25,10 @@ public class Jugador {
         this.wabokuActivo = false;
     }
 
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
+    }
+
     public Campo getCampo() {
         return campo;
     }

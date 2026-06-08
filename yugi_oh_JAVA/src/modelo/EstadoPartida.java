@@ -1,13 +1,9 @@
 package modelo;
 
 import java.util.ArrayList;
-import modelo.Carta;
-import modelo.Monstruo;
-import modelo.CartaTrampa;
-import modelo.Jugador;
 
 public class EstadoPartida {
-    
+
     private final String nombreTurnoActual;
     private final EstadoJugador j1;
     private final EstadoJugador j2;
@@ -18,11 +14,20 @@ public class EstadoPartida {
         this.j2 = new EstadoJugador(jugador2);
     }
 
-    public String getNombreTurnoActual() { return nombreTurnoActual; }
-    public EstadoJugador getJ1() { return j1; }
-    public EstadoJugador getJ2() { return j2; }
+    public String getNombreTurnoActual() {
+        return nombreTurnoActual;
+    }
+
+    public EstadoJugador getJ1() {
+        return j1;
+    }
+
+    public EstadoJugador getJ2() {
+        return j2;
+    }
 
     public static class EstadoJugador {
+
         private final String nombre;
         private final int lp;
         private final ArrayList<String> mano;
@@ -33,7 +38,7 @@ public class EstadoPartida {
         public EstadoJugador(Jugador j) {
             this.nombre = j.getNombre();
             this.lp = j.getLp();
-            
+
             this.mano = new ArrayList<>();
             for (Carta c : j.getMano()) mano.add(serializarCarta(c));
             

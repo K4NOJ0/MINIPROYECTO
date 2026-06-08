@@ -2,17 +2,12 @@
 package controlador;
 
 import modelo.CargadorCartas;
-import modelo.CargadorCartas;
 import java.util.ArrayList;
 import java.util.Random;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 import modelo.*;
-import modelo.EstadoPartida;
-import modelo.GestorMementos;
-import modelo.GestorArchivos;
-import modelo.PartidaSerializer;
 import modelo.PartidaSerializer.DatosJugador;
 import modelo.PartidaSerializer.DatosPartida;
 import vista.TableroJuego;
@@ -119,6 +114,8 @@ public class ControladorJuego implements TableroJuego.TableroListener {
         }
 
         DatosPartida datos = PartidaSerializer.deserializar(contenido);
+        System.out.println("Nombre archivo J1: " + datos.j1.nombre);
+        System.out.println("Nombre archivo J2: " + datos.j2.nombre);
         if (datos == null || datos.j1 == null || datos.j2 == null) {
             vista.mostrarMensaje("Error", "el archivo de partida está corrupto.");
             return;
@@ -147,6 +144,7 @@ public class ControladorJuego implements TableroJuego.TableroListener {
     }
 
     private void restaurarJugador(Jugador jugador, DatosJugador datos) {
+        jugador.setNombre(datos.nombre);
         jugador.setLp(datos.lp);
         jugador.getCampo().limpiar();
         jugador.getMazoStack().clear();
@@ -356,16 +354,25 @@ public class ControladorJuego implements TableroJuego.TableroListener {
     }
 
     private void actualizarVista() {
-        vista.actualizarHUD(j1.getLp(), j2.getLp(),
-                j1.getMazoStack().size(), j2.getMazoStack().size(),
-                turnoActual.getNombre());
+        vista.actualizarHUD(
+            j1.getNombre(),
+            j2.getNombre(),
+            j1.getLp(),
+            j2.getLp(),
+            j1.getMazoStack().size(),
+            j2.getMazoStack().size(),
+            turnoActual.getNombre()
+        );
+
         vista.actualizarMano(turnoActual.getMano());
+
         vista.actualizarCampo(
-                turnoActual.getCampo().getZonaMonstruos(),
-                turnoActual.getCampo().getZonaTrampas(),
-                rival.getCampo().getZonaMonstruos(),
-                rival.getCampo().getZonaTrampas(),
-                rival.getMano().size());
+            turnoActual.getCampo().getZonaMonstruos(),
+            turnoActual.getCampo().getZonaTrampas(),
+            rival.getCampo().getZonaMonstruos(),
+            rival.getCampo().getZonaTrampas(),
+            rival.getMano().size()
+        );
     }
 
     public Jugador getJ1() {
