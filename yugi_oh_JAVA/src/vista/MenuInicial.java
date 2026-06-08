@@ -42,7 +42,7 @@ public class MenuInicial extends JFrame {
         panel.add(title, gbc);
 
         gbc.gridy = 1;
-        JLabel subtitle = new JLabel("★  SIMULADOR DE DUELO  ★");
+        JLabel subtitle = new JLabel("  SIMULADOR DE DUELO  ");
         subtitle.setFont(new Font("Serif", Font.ITALIC, 18));
         subtitle.setForeground(new Color(180, 150, 255));
         panel.add(subtitle, gbc);
@@ -73,13 +73,13 @@ public class MenuInicial extends JFrame {
 
         gbc.gridy = 6;
         gbc.insets = new Insets(25, 20, 8, 20);
-        JButton btnDuelar = createGoldButton("⚔  ¡COMENZAR DUELO!  ⚔", new Color(212, 175, 55));
+        JButton btnDuelar = createGoldButton("  ¡COMENZAR DUELO!  ", new Color(212, 175, 55));
         btnDuelar.addActionListener(e -> comenzarDuelo(campo1.getText(), campo2.getText()));
         panel.add(btnDuelar, gbc);
 
         gbc.gridy = 7;
         gbc.insets = new Insets(0, 20, 10, 20);
-        JButton btnEstadisticas = createGoldButton("📊  Ver Estadísticas  📊", new Color(80, 150, 200));
+        JButton btnEstadisticas = createGoldButton("  Ver Estadísticas  ", new Color(80, 150, 200));
         btnEstadisticas.addActionListener(e -> VistaEstadisticas.mostrar());
         panel.add(btnEstadisticas, gbc);
 
@@ -106,16 +106,17 @@ public class MenuInicial extends JFrame {
                 Graphics2D g2 = (Graphics2D) g;
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                 GradientPaint gp = new GradientPaint(
-                    0, 0, new Color(10, 5, 30),
-                    getWidth(), getHeight(), new Color(40, 15, 60));
+                        0, 0, new Color(10, 5, 30),
+                        getWidth(), getHeight(), new Color(40, 15, 60));
                 g2.setPaint(gp);
                 g2.fillRect(0, 0, getWidth(), getHeight());
                 g2.setColor(new Color(212, 175, 55, 120));
                 g2.setStroke(new java.awt.BasicStroke(3));
                 g2.drawRect(15, 15, getWidth() - 30, getHeight() - 30);
                 g2.setColor(new Color(212, 175, 55, 60));
-                int[][] stars = {{50,50},{620,80},{100,400},{600,380},{350,30},{200,450}};
-                for (int[] s : stars) drawStar(g2, s[0], s[1], 12, 5);
+                int[][] stars = { { 50, 50 }, { 620, 80 }, { 100, 400 }, { 600, 380 }, { 350, 30 }, { 200, 450 } };
+                for (int[] s : stars)
+                    drawStar(g2, s[0], s[1], 12, 5);
             }
 
             private void drawStar(Graphics2D g2, int x, int y, int r, int points) {
@@ -123,8 +124,8 @@ public class MenuInicial extends JFrame {
                 int[] xs = new int[points * 2], ys = new int[points * 2];
                 for (int i = 0; i < points * 2; i++) {
                     double rad = (i % 2 == 0) ? r : r / 2.5;
-                    xs[i] = (int)(x + rad * Math.sin(i * angle));
-                    ys[i] = (int)(y - rad * Math.cos(i * angle));
+                    xs[i] = (int) (x + rad * Math.sin(i * angle));
+                    ys[i] = (int) (y - rad * Math.cos(i * angle));
                 }
                 g2.fillPolygon(xs, ys, points * 2);
             }
@@ -138,8 +139,8 @@ public class MenuInicial extends JFrame {
         tf.setForeground(new Color(212, 175, 55));
         tf.setCaretColor(Color.WHITE);
         tf.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(new Color(212, 175, 55), 1),
-            BorderFactory.createEmptyBorder(6, 10, 6, 10)));
+                BorderFactory.createLineBorder(new Color(212, 175, 55), 1),
+                BorderFactory.createEmptyBorder(6, 10, 6, 10)));
         tf.setHorizontalAlignment(JTextField.CENTER);
         return tf;
     }
@@ -150,17 +151,17 @@ public class MenuInicial extends JFrame {
             protected void paintComponent(Graphics g) {
                 Graphics2D g2 = (Graphics2D) g;
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                Color c = getModel().isPressed()  ? baseColor.darker()
+                Color c = getModel().isPressed() ? baseColor.darker()
                         : getModel().isRollover() ? baseColor.brighter()
-                        : baseColor;
+                                : baseColor;
                 g2.setColor(c);
                 g2.fillRoundRect(0, 0, getWidth(), getHeight(), 12, 12);
                 g2.setColor(new Color(10, 5, 30));
                 g2.setFont(getFont());
                 FontMetrics fm = g2.getFontMetrics();
                 g2.drawString(getText(),
-                    (getWidth() - fm.stringWidth(getText())) / 2,
-                    (getHeight() + fm.getAscent() - fm.getDescent()) / 2);
+                        (getWidth() - fm.stringWidth(getText())) / 2,
+                        (getHeight() + fm.getAscent() - fm.getDescent()) / 2);
             }
         };
         btn.setFont(new Font("Serif", Font.BOLD, 16));

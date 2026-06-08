@@ -35,20 +35,34 @@ public class EstadoPartida {
             this.lp = j.getLp();
             
             this.mano = new ArrayList<>();
-            for (Carta c : j.getMano()) mano.add(c.getNombre() + "|" + c.getTipo());
+            for (Carta c : j.getMano()) mano.add(serializarCarta(c));
             
             this.mazo = new ArrayList<>();
-            for (Carta c : j.getMazo()) mazo.add(c.getNombre() + "|" + c.getTipo());
+            for (Carta c : j.getMazo()) mazo.add(serializarCarta(c));
             
             this.campoMonstruos = new ArrayList<>();
             for (Monstruo m : j.getCampo().getZonaMonstruos()) {
-                campoMonstruos.add(m.getNombre() + "|" + (m.isEnModoAtaque() ? "ATK" : "DEF") + "|" + (m.isYaAtaco() ? "ATACO" : "NO_ATACO"));
+                campoMonstruos.add(m.getNombre() + "|" + (m.isEnModoAtaque() ? "ATK" : "DEF") + "|" + (m.isYaAtaco() ? "ATACO" : "NO_ATACO") + "|" + m.getAtk() + "|" + m.getDef() + "|" + m.getNivel());
             }
             
             this.campoTrampas = new ArrayList<>();
             for (CartaTrampa t : j.getCampo().getZonaTrampas()) {
-                campoTrampas.add(t.getNombre() + "|" + (t.isActiva() ? "ACTIVA" : "OCULTA"));
+                campoTrampas.add(t.getNombre() + "|" + (t.isActiva() ? "ACTIVA" : "OCULTA") + "|" + t.getEfecto() + "|" + t.getCondicion());
             }
+        }
+
+        private String serializarCarta(Carta c) {
+            if (c instanceof Monstruo) {
+                Monstruo m = (Monstruo) c;
+                return m.getNombre() + "|Monstruo|" + m.getAtk() + "|" + m.getDef() + "|" + m.getNivel();
+            } else if (c instanceof CartaMagica) {
+                CartaMagica cm = (CartaMagica) c;
+                return cm.getNombre() + "|Magia|" + cm.getEfecto();
+            } else if (c instanceof CartaTrampa) {
+                CartaTrampa ct = (CartaTrampa) c;
+                return ct.getNombre() + "|Trampa|" + ct.getEfecto() + "|" + ct.getCondicion();
+            }
+            return c.getNombre() + "|" + c.getTipo();
         }
 
         public String getNombre() { return nombre; }
