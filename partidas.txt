@@ -1,0 +1,60 @@
+[GUARDADO_3]
+[PARTIDA]
+TurnoActual=SHINRA
+
+[JUGADOR1]
+Nombre=KEMPACHI
+LP=8000
+Mano=Dragón Negro de Ojos Rojos|Monstruo|2400|2000|7,La Jinn|Monstruo|1800|1000|4,Bruja del Bosque Negro|Monstruo|1100|1200|4,Vorcerader|Monstruo|1900|1200|4,Negar Ataque|Trampa|negar_ataque|ataque
+Mazo=Protección Waboku|Trampa|proteccion_waboku|ataque,Segador del Espíritu|Monstruo|300|200|3,Polvo del Cosmos|Magia|robar,Agujero Trampa Sin Fondo|Trampa|agujero_sin_fondo|invocacion,Muro de Ilusión|Monstruo|1000|1850|4,Olla de la Codicia|Magia|robar,Insecto Comehombres|Monstruo|450|600|2,Blindaje Sakuretsu|Trampa|blindaje_sakuretsu|ataque,Buey de Batalla|Monstruo|1700|1000|4,Tornado de Polvo|Trampa|tornado_polvo|ataque,Elfa Mística|Monstruo|800|2000|4,Evacuación Forzada|Trampa|evacuacion_forzada|ataque,Mago Oscuro|Monstruo|2500|2100|7,Aqua Madoor|Monstruo|1200|2000|4,Lluvia de Relámpagos|Magia|destruir,Trampa de Araña|Magia|destruir,Mago del Tiempo|Monstruo|500|400|2,Universo Atómico|Magia|destruir,Destructor de Espadas|Monstruo|2600|2300|7
+CampoMonstruos=Dama Arpía|ATK|NO_ATACO|1300|1400|4
+CampoTrampas=
+
+[JUGADOR2]
+Nombre=SHINRA
+LP=8000
+Mano=Hada de Inyección Lily|Monstruo|400|1500|3,Soldado Archidemonio|Monstruo|1900|1500|4,Kuriboh|Monstruo|300|200|1,Expansión Astral|Magia|recuperar,Tributo Torrencial|Trampa|tributo_torrencial|invocacion,Sangan|Monstruo|1000|600|3
+Mazo=Cilindro Mágico|Trampa|cilindro_magico|ataque,Escudo Místico|Magia|recuperar,Agujero Trampa|Trampa|agujero_trampa|invocacion,Hermanas Arpía|Monstruo|1950|2100|6,Elfa Géminis|Monstruo|1900|900|4,Fuerza Espejo|Trampa|fuerza_espejo|ataque,Guardián Celta|Monstruo|1400|1200|4,Dragón Blanco de Ojos Azules|Monstruo|3000|2500|8,Jinzo|Monstruo|2400|1500|6,Poder Oscuro|Magia|boost,Calavera Invocada|Monstruo|2500|1200|6,Chica Maga Oscura|Monstruo|2000|1700|6,Gearfried el Caballero de Hierro|Monstruo|1800|1600|4,Renacer del Espíritu|Magia|recuperar,Gigante Soldado de Piedra|Monstruo|1300|2000|3,Neo el Espadachín Mágico|Monstruo|1700|1000|4,Fuerza Exiliada|Monstruo|1000|1000|4,Dragón Bebé|Monstruo|1200|700|3,Terraformación|Magia|boost
+CampoMonstruos=
+CampoTrampas=
+[FIN_GUARDADO_3]
+[GUARDADO_2]
+[PARTIDA]
+TurnoActual=KEMPACHI
+
+[JUGADOR1]
+Nombre=KEMPACHI
+LP=8000
+Mano=Elfa Géminis|Monstruo|1900|900|4,Olla de la Codicia|Magia|robar,Agujero Trampa|Trampa|agujero_trampa|invocacion,Guardián Celta|Monstruo|1400|1200|4,Protección Waboku|Trampa|proteccion_waboku|ataque
+Mazo=Calavera Invocada|Monstruo|2500|1200|6,Lluvia de Relámpagos|Magia|destruir,Soldado Archidemonio|Monstruo|1900|1500|4,Universo Atómico|Magia|destruir,Insecto Comehombres|Monstruo|450|600|2,Aqua Madoor|Monstruo|1200|2000|4,Tributo Torrencial|Trampa|tributo_torrencial|invocacion,Dragón Negro de Ojos Rojos|Monstruo|2400|2000|7,Destructor de Espadas|Monstruo|2600|2300|7,Kuriboh|Monstruo|300|200|1,Evacuación Forzada|Trampa|evacuacion_forzada|ataque,Cilindro Mágico|Trampa|cilindro_magico|ataque,Dragón Blanco de Ojos Azules|Monstruo|3000|2500|8,Escudo Místico|Magia|recuperar,Bruja del Bosque Negro|Monstruo|1100|1200|4,Renacer del Espíritu|Magia|recuperar,Trampa de Araña|Magia|destruir,Segador del Espíritu|Monstruo|300|200|3,Blindaje Sakuretsu|Trampa|blindaje_sakuretsu|ataque
+CampoMonstruos=Gearfried el Caballero de Hierro|ATK|NO_ATACO|1800|1600|4
+CampoTrampas=
+
+[JUGADOR2]
+Nombre=SHINRA
+LP=8000
+Mano=Negar Ataque|Trampa|negar_ataque|ataque,Elfa Mística|Monstruo|800|2000|4,Mago Oscuro|Monstruo|2500|2100|7,Terraformación|Magia|boost,Poder Oscuro|Magia|boost
+Mazo=Fuerza Espejo|Trampa|fuerza_espejo|ataque,La Jinn|Monstruo|1800|1000|4,Sangan|Monstruo|1000|600|3,Dragón Bebé|Monstruo|1200|700|3,Neo el Espadachín Mágico|Monstruo|1700|1000|4,Tornado de Polvo|Trampa|tornado_polvo|ataque,Muro de Ilusión|Monstruo|1000|1850|4,Jinzo|Monstruo|2400|1500|6,Hada de Inyección Lily|Monstruo|400|1500|3,Fuerza Exiliada|Monstruo|1000|1000|4,Mago del Tiempo|Monstruo|500|400|2,Dama Arpía|Monstruo|1300|1400|4,Buey de Batalla|Monstruo|1700|1000|4,Gigante Soldado de Piedra|Monstruo|1300|2000|3,Chica Maga Oscura|Monstruo|2000|1700|6,Vorcerader|Monstruo|1900|1200|4,Polvo del Cosmos|Magia|robar,Expansión Astral|Magia|recuperar,Agujero Trampa Sin Fondo|Trampa|agujero_sin_fondo|invocacion
+CampoMonstruos=Hermanas Arpía|ATK|NO_ATACO|1950|2100|6
+CampoTrampas=
+[FIN_GUARDADO_2]
+[GUARDADO_1]
+[PARTIDA]
+TurnoActual=KEMPACHI
+
+[JUGADOR1]
+Nombre=KEMPACHI
+LP=8000
+Mano=Polvo del Cosmos|Magia|robar,Segador del Espíritu|Monstruo|300|200|3,Destructor de Espadas|Monstruo|2600|2300|7,Dragón Negro de Ojos Rojos|Monstruo|2400|2000|7,Renacer del Espíritu|Magia|recuperar
+Mazo=Universo Atómico|Magia|destruir,Cilindro Mágico|Trampa|cilindro_magico|ataque,Escudo Místico|Magia|recuperar,Expansión Astral|Magia|recuperar,Mago del Tiempo|Monstruo|500|400|2,Hermanas Arpía|Monstruo|1950|2100|6,Protección Waboku|Trampa|proteccion_waboku|ataque,Insecto Comehombres|Monstruo|450|600|2,Chica Maga Oscura|Monstruo|2000|1700|6,Aqua Madoor|Monstruo|1200|2000|4,Fuerza Exiliada|Monstruo|1000|1000|4,La Jinn|Monstruo|1800|1000|4,Elfa Mística|Monstruo|800|2000|4,Trampa de Araña|Magia|destruir,Negar Ataque|Trampa|negar_ataque|ataque,Jinzo|Monstruo|2400|1500|6,Dragón Bebé|Monstruo|1200|700|3
+CampoMonstruos=Gigante Soldado de Piedra|ATK|NO_ATACO|1300|2000|3
+CampoTrampas=Fuerza Espejo|OCULTA|fuerza_espejo|ataque,Evacuación Forzada|OCULTA|evacuacion_forzada|ataque
+
+[JUGADOR2]
+Nombre=SHINRA
+LP=8000
+Mano=Gearfried el Caballero de Hierro|Monstruo|1800|1600|4,Tributo Torrencial|Trampa|tributo_torrencial|invocacion,Olla de la Codicia|Magia|robar,Calavera Invocada|Monstruo|2500|1200|6,Guardián Celta|Monstruo|1400|1200|4
+Mazo=Dragón Blanco de Ojos Azules|Monstruo|3000|2500|8,Agujero Trampa Sin Fondo|Trampa|agujero_sin_fondo|invocacion,Kuriboh|Monstruo|300|200|1,Buey de Batalla|Monstruo|1700|1000|4,Lluvia de Relámpagos|Magia|destruir,Vorcerader|Monstruo|1900|1200|4,Agujero Trampa|Trampa|agujero_trampa|invocacion,Elfa Géminis|Monstruo|1900|900|4,Tornado de Polvo|Trampa|tornado_polvo|ataque,Neo el Espadachín Mágico|Monstruo|1700|1000|4,Terraformación|Magia|boost,Soldado Archidemonio|Monstruo|1900|1500|4,Dama Arpía|Monstruo|1300|1400|4,Sangan|Monstruo|1000|600|3,Poder Oscuro|Magia|boost,Blindaje Sakuretsu|Trampa|blindaje_sakuretsu|ataque,Muro de Ilusión|Monstruo|1000|1850|4,Mago Oscuro|Monstruo|2500|2100|7
+CampoMonstruos=Bruja del Bosque Negro|DEF|NO_ATACO|1100|1200|4,Hada de Inyección Lily|ATK|NO_ATACO|400|1500|3
+CampoTrampas=
+[FIN_GUARDADO_1]

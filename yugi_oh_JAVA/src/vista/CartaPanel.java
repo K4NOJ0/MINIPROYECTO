@@ -144,7 +144,7 @@ public class CartaPanel extends JPanel {
         if (enCampo) {
             g2.setColor(new Color(180, 50, 50));
             g2.setFont(new Font("Serif", Font.BOLD, 8));
-            g2.drawString("↓ BOCA ABAJO", 5, 85 + yOff);
+            g2.drawString(" BOCA ABAJO", 5, 85 + yOff);
         } else {
             g2.setFont(new Font("Serif", Font.PLAIN, 7));
             g2.setColor(new Color(255, 180, 180));

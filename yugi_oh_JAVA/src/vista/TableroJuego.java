@@ -319,10 +319,10 @@ public class TableroJuego extends JFrame {
         int mazoJ2,
         String turnoNombre) {
 
-        lblLpJ1.setText("❤ " + nombreJ1 + ": " + lpJ1 + " LP");
-        lblLpJ2.setText("❤ " + nombreJ2 + ": " + lpJ2 + " LP");
-        lblMazoJ1.setText("🂠 Mazo " + nombreJ1 + ": " + mazoJ1);
-        lblMazoJ2.setText("🂠 Mazo " + nombreJ2 + ": " + mazoJ2);
+        lblLpJ1.setText(" " + nombreJ1 + ": " + lpJ1 + " LP");
+        lblLpJ2.setText("" + nombreJ2 + ": " + lpJ2 + " LP");
+        lblMazoJ1.setText("Mazo " + nombreJ1 + ": " + mazoJ1);
+        lblMazoJ2.setText("Mazo " + nombreJ2 + ": " + mazoJ2);
         lblTurno.setText("TURNO: " + turnoNombre.toUpperCase());
     }
 
