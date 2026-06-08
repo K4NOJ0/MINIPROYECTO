@@ -114,8 +114,6 @@ public class ControladorJuego implements TableroJuego.TableroListener {
         }
 
         DatosPartida datos = PartidaSerializer.deserializar(contenido);
-        System.out.println("Nombre archivo J1: " + datos.j1.nombre);
-        System.out.println("Nombre archivo J2: " + datos.j2.nombre);
         if (datos == null || datos.j1 == null || datos.j2 == null) {
             vista.mostrarMensaje("Error", "el archivo de partida está corrupto.");
             return;
@@ -334,8 +332,7 @@ public class ControladorJuego implements TableroJuego.TableroListener {
     public void finalizarJuego(Jugador ganador, String razon) {
         actualizarVista();
         vista.mostrarMensaje("Duelo Finalizado",
-                "Ganador: " + ganador.getNombre() + "\n" + razon +
-                        "\n\"Confía en el corazón de las cartas\" — Yugi Muto");
+                "Ganador: " + ganador.getNombre() + "\n" + razon);
 
         String fecha = LocalDateTime.now()
                 .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
