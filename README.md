@@ -61,6 +61,26 @@ El juego incluye un sistema integrado para persistir el estado actual del duelo:
 
 ---
 
+## Justificación de Estructuras de Datos
+
+El proyecto incorpora de forma justificada las siguientes estructuras de datos, evitando el uso arbitrario de `ArrayList`:
+
+- **`Stack<Carta>` — Mazo del jugador** (`Jugador.java`): El mazo funciona bajo el principio LIFO (último en entrar, primero en salir), exactamente como ocurre en el juego real: la última carta mezclada es la primera en robarse. Se usa `push()` al construir el mazo y `pop()` al robar una carta.
+
+- **`Stack<Carta>` — Historial de jugadas del campo** (`Campo.java`): Las cartas jugadas en el campo se apilan en orden cronológico. La carta jugada más recientemente queda en la cima, lo que permite rastrear el historial de jugadas de forma natural con semántica LIFO.
+
+- **`Stack<EstadoPartida>` — Historial de estados guardados** (`GestorMementos.java`): Cada vez que se guarda la partida se empuja un nuevo `EstadoPartida` al stack. El estado más reciente siempre queda en la cima, facilitando la restauración con `pop()`. Esto también habilita la funcionalidad de deshacer.
+
+- **`LinkedList<Carta>` — Mano del jugador** (`Jugador.java`): La mano requiere inserción al final al robar cartas y eliminación en cualquier posición al jugar una carta. `LinkedList` realiza ambas operaciones eficientemente sin necesidad de reorganizar índices, a diferencia de `ArrayList`.
+
+- **`LinkedList<Monstruo>` y `LinkedList<CartaTrampa>` — Zonas del campo** (`Campo.java`): Las zonas de monstruos y trampas del campo necesitan agregar y eliminar cartas en cualquier posición (cuando un monstruo es destruido o una trampa se activa). `LinkedList` es ideal para estas operaciones frecuentes de inserción y eliminación.
+
+- **`Queue<String>` — Cola de eventos del duelo** (`Juego.java`): Los eventos del duelo (ataques, efectos activados, daño recibido) deben procesarse en el orden exacto en que ocurren, siguiendo el principio FIFO (primero en entrar, primero en salir). Se usa `offer()` para encolar un evento y `poll()` para procesarlo.
+
+- **`HashMap<String, Carta>` — Registro de cartas** (`Juego.java`): Permite buscar cualquier carta por su nombre en tiempo O(1). Esto es fundamental para el sistema de Reflection, donde se carga una clase dinámicamente desde un archivo de texto usando el nombre de la carta como clave.
+
+- **`HashMap<String, Integer>` — Victorias por jugador** (`AnalizadorEstadisticas.java`): Asocia el nombre de cada jugador con su conteo de victorias históricas leídas desde `resultados.txt`. La búsqueda por nombre en O(1) hace eficiente el análisis de estadísticas.
+
 John Freddy Hurtado 2559863-3743
 
 Jhon David Ceballos 2559724-3743
